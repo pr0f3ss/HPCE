@@ -16,6 +16,10 @@ ChessBoard::ChessBoard(){
     printBoard();
     playMove("e5");
     printBoard();
+    playMove("Nf3");
+    printBoard();
+    playMove("Nc6");
+    printBoard();
     
 }
 
@@ -100,6 +104,20 @@ void ChessBoard::initBoard(){
 }
 
 /**
+ * Returns the current game score (in standard notation).
+ */
+int ChessBoard::getScore(){
+    int score = 0;
+
+    for(int i=0; i<8; i++){
+        for(int j=0; j<8; j++){
+            Figure curr = board[i][j];
+            score += curr.color ? -curr.value : curr.value; 
+        }
+    }
+}
+
+/**
  * Returns whether a move is legal (1 = legal). If the move is legal, we pass the relevant rank and file positions for the move to be played.
  * Note that there are no guarantees for the rank and file positions if the move is illegal.
  * @param input move notation
@@ -111,46 +129,246 @@ void ChessBoard::initBoard(){
 int ChessBoard::isLegalMove(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to){
     // If first letter is uppercase, it is a not a pawn
     if(isupper(move[0])){
-        return 1;
+        switch(move[0]) {
+            case 'N': return handleKnight(move, rank_from, file_from, rank_to, file_to);
+            case 'B': return handleBishop(move, rank_from, file_from, rank_to, file_to);
+            case 'R': return handleRook(move, rank_from, file_from, rank_to, file_to);
+            case 'Q': return handleQueen(move, rank_from, file_from, rank_to, file_to);
+            case 'K': return handleKing(move, rank_from, file_from, rank_to, file_to);
+            default:  return 0;
+        }
     }else{
-        // pawn capture case
-        if(move[1] == 'x'){
-            return 1;
-        }else{ // pawn moves normally
-            int file = file_to_int(move[0]);
-            int rank = 8 - (move[1] - '0');
+        return handlePawn(move, rank_from, file_from, rank_to, file_to);
+    }
+    return 0;
+}
 
-            if(rank == 4 && turn == 0){
-                // todo: check if king in check
-                if(board[4][file].empty==1 && board[5][file].empty==1){
-                    Figure pos = board[6][file];
-                    rank_from = 6;
-                    file_from = file;
-                    rank_to = rank;
-                    file_to = file;
-                    return pos.type == 0 && pos.color == 0 && kingIntoCheck(rank_from, file_from, rank_to, file_to);
-                }
-                return 0;
-            }else if(rank == 3 && turn == 1){
-                if(board[3][file].empty==1 && board[2][file].empty==1){
-                    Figure pos = board[1][file];
-                    rank_from = 1;
-                    file_from = file;
-                    rank_to = rank;
-                    file_to = file;
-                    return pos.type == 0 && pos.color == 1 && kingIntoCheck(rank_from, file_from, rank_to, file_to);
-                }
-                return 0;
-            }else{
-                return 1;
+/**
+ * Returns whether a pawn move is legal (1 = legal). Same notations apply as in isLegalMove().
+ * @param input move notation
+ * @param output rank of figure before move 
+ * @param output file of figure before me
+ * @param output rank of figure after move
+ * @param output file of figure after move
+ */
+int ChessBoard::handlePawn(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to){
+    if(move[1] == 'x'){
+        // todo: implement
+        return 1;
+    }else{ // pawn moves normally
+        int file = file_to_int(move[0]);
+        int rank = 8 - (move[1] - '0');
+
+        // Special case: Moving forward two squares
+        if(rank == 4 && turn == 0){ // for white
+            if(board[4][file].empty==1 && board[5][file].empty==1){
+                Figure pos = board[6][file];
+                rank_from = 6;
+                file_from = file;
+                rank_to = rank;
+                file_to = file;
+                return pos.type == 0 && pos.color == 0 && kingIntoCheck(rank_from, file_from, rank_to, file_to);
+            }
+            return 0;
+        }else if(rank == 3 && turn == 1){ // for black
+            if(board[3][file].empty==1 && board[2][file].empty==1){
+                Figure pos = board[1][file];
+                rank_from = 1;
+                file_from = file;
+                rank_to = rank;
+                file_to = file;
+                return pos.type == 0 && pos.color == 1 && kingIntoCheck(rank_from, file_from, rank_to, file_to);
+            }
+            return 0;
+        }else{ // Pawn moves forward one square
+            // Special case: Promotion
+            if(rank == 0 || rank == 7){
+                char promotion_piece = move[2];
+                // todo: implement
+            }
+            if(board[rank][file].empty==1){
+                int direction = turn ? -1 : 1;
+                rank_from = rank+direction;
+                file_from = file;
+                rank_to = rank;
+                file_to = file;
+                Figure pos = board[rank_from][file_from];
+                return pos.type == 0 && kingIntoCheck(rank_from, file_from, rank_to, file_to);
             }
         }
-
+        return 0;
     }
-
-    // todo: disambigious figures
-
 }
+
+/**
+ * Returns whether a knight move is legal (1 = legal). Same notations apply as in isLegalMove().
+ * @param input move notation
+ * @param output rank of figure before move 
+ * @param output file of figure before me
+ * @param output rank of figure after move
+ * @param output file of figure after move
+ */
+int ChessBoard::handleKnight(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to){
+     if(move[1] == 'x'){
+        // todo: implement
+        return 1;
+    }else{
+        if(move.length()==3){ // unambiguous move
+
+            int file = file_to_int(move[1]);
+            int rank = 8 - (move[2] - '0');
+
+            rank_to = rank;
+            file_to = file;
+
+            // iterate over possible knight positions (copied lots of code from kingIntoCheck)
+            // bottom cases
+            int r, f;
+            r = rank_to+2;
+            f = file_to;
+
+            if(r < 8){
+                if(f + 1 < 8){
+                    Figure curr = board[r][f+1];
+                    if(curr.color == turn && curr.type == KNIGHT_TYPE){
+                        rank_from = r;
+                        file_from = f+1;
+                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                    }
+                }
+                if(f - 1 >= 0){
+                    Figure curr = board[r][f-1];
+                    if(curr.color == turn && curr.type == KNIGHT_TYPE){
+                        rank_from = r;
+                        file_from = f-1;
+                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                    }
+                }
+            }
+
+            // top cases
+            r = rank_to-2;
+            f = file_to;
+            if(r >= 0){
+                if(f + 1 < 8){
+                    Figure curr = board[r][f+1];
+                    if(curr.color == turn && curr.type == KNIGHT_TYPE){
+                        rank_from = r;
+                        file_from = f+1;
+                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                    }
+                }
+                if(f - 1 >= 0){
+                    Figure curr = board[r][f-1];
+                    if(curr.color == turn && curr.type == KNIGHT_TYPE){
+                        rank_from = r;
+                        file_from = f-1;
+                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                    }
+                }
+            }
+
+            // left cases
+            r = rank_to;
+            f = file_to-2;
+            if(f >= 0){
+                if(r + 1 < 8){
+                    Figure curr = board[r+1][f];
+                    if(curr.color == turn && curr.type == KNIGHT_TYPE){
+                        rank_from = r+1;
+                        file_from = f;
+                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                    }
+                }
+                if(r - 1 >= 0){
+                    Figure curr = board[r-1][f];
+                    if(curr.color == turn && curr.type == KNIGHT_TYPE){
+                        rank_from = r-1;
+                        file_from = f;
+                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                    }
+                }
+            }
+
+            // right cases
+            r = rank_to;
+            f = file_to+2;
+            if(f < 8){
+                if(r + 1 < 8){
+                    Figure curr = board[r+1][f];
+                    if(curr.color == turn && curr.type == KNIGHT_TYPE){
+                        rank_from = r+1;
+                        file_from = f;
+                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                    }
+                }
+                if(r - 1 >= 0){
+                    Figure curr = board[r-1][f];
+                    if(curr.color == turn && curr.type == KNIGHT_TYPE){
+                        rank_from = r-1;
+                        file_from = f;
+                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                    }
+                }
+            }
+
+            return 0;
+
+        }else{ //ambiguous move
+
+        }
+    }
+}
+
+
+/**
+ * Returns whether a bishop move is legal (1 = legal). Same notations apply as in isLegalMove().
+ * @param input move notation
+ * @param output rank of figure before move 
+ * @param output file of figure before me
+ * @param output rank of figure after move
+ * @param output file of figure after move
+ */
+int ChessBoard::handleBishop(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to){
+    return 0;
+}
+
+/**
+ * Returns whether a rook move is legal (1 = legal). Same notations apply as in isLegalMove().
+ * @param input move notation
+ * @param output rank of figure before move 
+ * @param output file of figure before me
+ * @param output rank of figure after move
+ * @param output file of figure after move
+ */
+int ChessBoard::handleRook(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to){
+    return 0;
+}
+
+/**
+ * Returns whether a queen move is legal (1 = legal). Same notations apply as in isLegalMove().
+ * @param input move notation
+ * @param output rank of figure before move 
+ * @param output file of figure before me
+ * @param output rank of figure after move
+ * @param output file of figure after move
+ */
+int ChessBoard::handleQueen(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to){
+    return 0;
+}
+
+/**
+ * Returns whether a king move is legal (1 = legal). Same notations apply as in isLegalMove().
+ * @param input move notation
+ * @param output rank of figure before move 
+ * @param output file of figure before me
+ * @param output rank of figure after move
+ * @param output file of figure after move
+ */
+int ChessBoard::handleKing(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to){
+    return 0;
+}
+
 
 
 /**
