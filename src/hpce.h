@@ -6,6 +6,7 @@
 #define board_size 8
 #define players 2 
 #define dimension 2
+#define rook_amount 2
 
 #define WHITE 0
 #define BLACK 1
@@ -45,6 +46,8 @@ class ChessBoard{
     Figure board[board_size][board_size];
     int turn;
     int king_pos[players][dimension];
+    int king_moved[players];
+    int rook_moved[players][rook_amount]; //0: queenside rook, 1: kingside rook
 
     public:
         ChessBoard(void);
@@ -63,6 +66,7 @@ class ChessBoard{
         int handleRook(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to);
         int handleQueen(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to);
         int handleKing(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to);
+        int handleCastling(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to);
 
         int kingIntoCheck(int rank_from, int file_from, int rank_to, int file_to);
         int file_to_int(char file);

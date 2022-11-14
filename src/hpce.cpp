@@ -11,15 +11,29 @@ ChessBoard::ChessBoard(){
     turn = 0;
 
     initBoard();
-    printBoard();
     playMove("e4");
-    printBoard();
     playMove("e5");
-    printBoard();
+
     playMove("Nf3");
-    printBoard();
     playMove("Nc6");
+
+    playMove("Bb5");
+    playMove("a6");
+
+    playMove("O-O");
+    playMove("d6");
+
+    playMove("a3");
+    playMove("Bd7");
+
+    playMove("a4");
+    playMove("Qe7");
+
+    playMove("a5");
+    playMove("O-O-O");
+
     printBoard();
+
     
 }
 
@@ -42,6 +56,30 @@ int ChessBoard::playMove(std::string move){
         // board from-position gets empty and to-position gets updated 
         board[rank_to][file_to] = board[rank_from][file_from];
         board[rank_from][file_from] = empty;
+
+        // Special case: Castling; 
+        // King position gets updated already, we just have to move the rook accordingly
+        if(move == "O-O"){
+            king_moved[turn] = 1;
+            rook_moved[turn][1] = 1;
+            if(turn == WHITE){
+                board[7][7] = empty;
+                board[7][5] = w_rook;
+            }else{
+                board[0][7] = empty;
+                board[0][5] = w_rook;
+            }
+        }else if(move == "O-O-O"){
+            king_moved[turn] = 1;
+            rook_moved[turn][0] = 1;
+            if(turn == WHITE){
+                board[7][0] = empty;
+                board[7][3] = w_rook;
+            }else{
+                board[0][0] = empty;
+                board[0][3] = w_rook;
+            }
+        }
 
         turn = !turn; 
         return 1;
@@ -101,6 +139,9 @@ void ChessBoard::initBoard(){
     board[7][7] = w_rook;
     king_pos[0][0] = 7;
     king_pos[0][1] = 4;
+
+    king_moved[0] = 0;
+    king_moved[1] = 0;
 }
 
 /**
@@ -135,6 +176,7 @@ int ChessBoard::isLegalMove(std::string move, int &rank_from, int &file_from, in
             case 'R': return handleRook(move, rank_from, file_from, rank_to, file_to);
             case 'Q': return handleQueen(move, rank_from, file_from, rank_to, file_to);
             case 'K': return handleKing(move, rank_from, file_from, rank_to, file_to);
+            case 'O': return handleCastling(move, rank_from, file_from, rank_to, file_to);
             default:  return 0;
         }
     }else{
@@ -152,14 +194,14 @@ int ChessBoard::isLegalMove(std::string move, int &rank_from, int &file_from, in
  * @param output file of figure after move
  */
 int ChessBoard::handlePawn(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to){
-    if(move[1] == 'x'){
+    if(move.find('x') != std::string::npos){ // capture case
         // todo: implement
         return 1;
     }else{ // pawn moves normally
         int file = file_to_int(move[0]);
         int rank = 8 - (move[1] - '0');
 
-        // Special case: Moving forward two squares
+        // Special case: Check if moving forward two squares
         if(rank == 4 && turn == 0){ // for white
             if(board[4][file].empty==1 && board[5][file].empty==1){
                 Figure pos = board[6][file];
@@ -167,9 +209,8 @@ int ChessBoard::handlePawn(std::string move, int &rank_from, int &file_from, int
                 file_from = file;
                 rank_to = rank;
                 file_to = file;
-                return pos.type == 0 && pos.color == 0 && kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                return pos.type == 0 && pos.color == 0 && !kingIntoCheck(rank_from, file_from, rank_to, file_to);
             }
-            return 0;
         }else if(rank == 3 && turn == 1){ // for black
             if(board[3][file].empty==1 && board[2][file].empty==1){
                 Figure pos = board[1][file];
@@ -177,25 +218,26 @@ int ChessBoard::handlePawn(std::string move, int &rank_from, int &file_from, int
                 file_from = file;
                 rank_to = rank;
                 file_to = file;
-                return pos.type == 0 && pos.color == 1 && kingIntoCheck(rank_from, file_from, rank_to, file_to);
-            }
-            return 0;
-        }else{ // Pawn moves forward one square
-            // Special case: Promotion
-            if(rank == 0 || rank == 7){
-                char promotion_piece = move[2];
-                // todo: implement
-            }
-            if(board[rank][file].empty==1){
-                int direction = turn ? -1 : 1;
-                rank_from = rank+direction;
-                file_from = file;
-                rank_to = rank;
-                file_to = file;
-                Figure pos = board[rank_from][file_from];
-                return pos.type == 0 && kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                return pos.type == 0 && pos.color == 1 && !kingIntoCheck(rank_from, file_from, rank_to, file_to);
             }
         }
+
+        // Pawn moves forward one square
+        // Special case: Promotion
+        if(rank == 0 || rank == 7){
+            char promotion_piece = move[2];
+            // todo: implement
+        }
+        if(board[rank][file].empty==1){
+            int direction = turn ? -1 : 1;
+            rank_from = rank+direction;
+            file_from = file;
+            rank_to = rank;
+            file_to = file;
+            Figure pos = board[rank_from][file_from];
+            return pos.type == 0 && !kingIntoCheck(rank_from, file_from, rank_to, file_to);
+        }
+        
         return 0;
     }
 }
@@ -209,10 +251,10 @@ int ChessBoard::handlePawn(std::string move, int &rank_from, int &file_from, int
  * @param output file of figure after move
  */
 int ChessBoard::handleKnight(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to){
-     if(move[1] == 'x'){
+    if(move.find('x') != std::string::npos){ // capture case
         // todo: implement
         return 1;
-    }else{
+    }else{ // no capture case
         if(move.length()==3){ // unambiguous move
 
             int file = file_to_int(move[1]);
@@ -233,7 +275,7 @@ int ChessBoard::handleKnight(std::string move, int &rank_from, int &file_from, i
                     if(curr.color == turn && curr.type == KNIGHT_TYPE){
                         rank_from = r;
                         file_from = f+1;
-                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                        return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
                     }
                 }
                 if(f - 1 >= 0){
@@ -241,7 +283,7 @@ int ChessBoard::handleKnight(std::string move, int &rank_from, int &file_from, i
                     if(curr.color == turn && curr.type == KNIGHT_TYPE){
                         rank_from = r;
                         file_from = f-1;
-                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                        return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
                     }
                 }
             }
@@ -255,7 +297,7 @@ int ChessBoard::handleKnight(std::string move, int &rank_from, int &file_from, i
                     if(curr.color == turn && curr.type == KNIGHT_TYPE){
                         rank_from = r;
                         file_from = f+1;
-                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                        return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
                     }
                 }
                 if(f - 1 >= 0){
@@ -263,7 +305,7 @@ int ChessBoard::handleKnight(std::string move, int &rank_from, int &file_from, i
                     if(curr.color == turn && curr.type == KNIGHT_TYPE){
                         rank_from = r;
                         file_from = f-1;
-                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                        return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
                     }
                 }
             }
@@ -277,7 +319,7 @@ int ChessBoard::handleKnight(std::string move, int &rank_from, int &file_from, i
                     if(curr.color == turn && curr.type == KNIGHT_TYPE){
                         rank_from = r+1;
                         file_from = f;
-                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                        return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
                     }
                 }
                 if(r - 1 >= 0){
@@ -285,7 +327,7 @@ int ChessBoard::handleKnight(std::string move, int &rank_from, int &file_from, i
                     if(curr.color == turn && curr.type == KNIGHT_TYPE){
                         rank_from = r-1;
                         file_from = f;
-                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                        return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
                     }
                 }
             }
@@ -299,7 +341,7 @@ int ChessBoard::handleKnight(std::string move, int &rank_from, int &file_from, i
                     if(curr.color == turn && curr.type == KNIGHT_TYPE){
                         rank_from = r+1;
                         file_from = f;
-                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                        return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
                     }
                 }
                 if(r - 1 >= 0){
@@ -307,7 +349,7 @@ int ChessBoard::handleKnight(std::string move, int &rank_from, int &file_from, i
                     if(curr.color == turn && curr.type == KNIGHT_TYPE){
                         rank_from = r-1;
                         file_from = f;
-                        return kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                        return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
                     }
                 }
             }
@@ -315,7 +357,8 @@ int ChessBoard::handleKnight(std::string move, int &rank_from, int &file_from, i
             return 0;
 
         }else{ //ambiguous move
-
+            // todo: implement
+            return 1;
         }
     }
 }
@@ -330,7 +373,73 @@ int ChessBoard::handleKnight(std::string move, int &rank_from, int &file_from, i
  * @param output file of figure after move
  */
 int ChessBoard::handleBishop(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to){
-    return 0;
+    if(move.find('x') != std::string::npos){ // capture case
+        // todo: implement
+        return 1;
+    }else{ // no capture case
+        if(move.length()==3){ // unambiguous move
+
+            int file = file_to_int(move[1]);
+            int rank = 8 - (move[2] - '0');
+
+            rank_to = rank;
+            file_to = file;
+
+            // copied mostly from kingIntoCheck()
+
+            // diagonal traversal, bottom-left
+            for(int i=rank_to+1, j=file_to-1; i<8 && j>=0; i++, j--){
+                Figure curr = board[i][j];
+                if(curr.color == turn && curr.type == BISHOP_TYPE){
+                    rank_from = i;
+                    file_from = j;
+                    return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                }   
+                if(curr.color == !turn) break;
+            }
+
+            // diagonal traversal, bottom-right
+
+            for(int i=rank_to+1, j=file_to+1; i<8 && j<8; i++, j++){
+                Figure curr = board[i][j];
+                if(curr.color == turn && curr.type == BISHOP_TYPE){
+                    rank_from = i;
+                    file_from = j;
+                    return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                }   
+                if(curr.color == !turn) break;
+            }
+
+            // diagonal traversal, top-left
+
+            for(int i=rank_to-1, j=file_to-1; i>=0 && j>=0; i--, j--){
+                Figure curr = board[i][j];
+                if(curr.color == turn && curr.type == BISHOP_TYPE){
+                    rank_from = i;
+                    file_from = j;
+                    return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                }   
+                if(curr.color == !turn) break;
+                
+            }
+
+            // diagonal traversal, top-right
+            for(int i=rank_to-1, j=file_to+1; i>=0 && j<8; i--, j++){
+                Figure curr = board[i][j];
+                if(curr.color == turn && curr.type == BISHOP_TYPE){
+                    rank_from = i;
+                    file_from = j;
+                    return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
+                }   
+                if(curr.color == !turn) break;
+                
+            }
+            return 0;
+        }else{ //disambiguous case
+            // todo: implement
+            return 1;
+        }
+    }
 }
 
 /**
@@ -368,6 +477,63 @@ int ChessBoard::handleQueen(std::string move, int &rank_from, int &file_from, in
 int ChessBoard::handleKing(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to){
     return 0;
 }
+
+/**
+ * Returns whether a castling move is legal (1 = legal). Same notations apply as in isLegalMove().
+ * @param input move notation
+ * @param output rank of figure before move 
+ * @param output file of figure before me
+ * @param output rank of figure after move
+ * @param output file of figure after move
+ */
+int ChessBoard::handleCastling(std::string move, int &rank_from, int &file_from, int &rank_to, int &file_to){
+    if(move == "O-O"){ // king side castle
+        if(turn == WHITE){
+            rank_from = 7;
+            file_from = 4;
+            rank_to = 7;
+            file_to = 6;
+            Figure l = board[7][5];
+            Figure r = board[7][6];
+            if(!l.empty || !r.empty) return 0;
+        }else{
+            rank_from = 0;
+            file_from = 4;
+            rank_to = 0;
+            file_to = 6;
+            Figure l = board[0][5];
+            Figure r = board[0][6];
+            if(!l.empty || !r.empty) return 0;
+        }
+        // we have to check all squares that the king would move to are not in check
+        return !king_moved[turn] && !rook_moved[turn][1] && !kingIntoCheck(rank_from, file_from, rank_to, file_to) && !kingIntoCheck(rank_from, file_from, rank_to, file_to-1);
+    }else if(move == "O-O-O"){ // queen side castle
+        if(turn == WHITE){
+            rank_from = 7;
+            file_from = 4;
+            rank_to = 7;
+            file_to = 2;
+            Figure l = board[7][1];
+            Figure m = board[7][2];
+            Figure r = board[7][3];
+            if(!l.empty || !m.empty || !r.empty) return 0;
+        }else{
+            rank_from = 0;
+            file_from = 4;
+            rank_to = 0;
+            file_to = 2;
+            Figure l = board[0][1];
+            Figure m = board[0][2];
+            Figure r = board[0][3];
+            if(!l.empty || !m.empty || !r.empty) return 0;
+        }
+        // we have to check all squares that the king would move to are not in check
+        return !king_moved[turn] && !rook_moved[turn][0] && !kingIntoCheck(rank_from, file_from, rank_to, file_to) && !kingIntoCheck(rank_from, file_from, rank_to, file_to+1);
+    }
+
+    return 0;
+}
+
 
 
 
@@ -437,7 +603,6 @@ int ChessBoard::kingIntoCheck(int rank_from, int file_from, int rank_to, int fil
     }
 
     // diagonal traversal, bottom-left of king
-
     // Special case: check if white pawn attacks black king
     if(turn == BLACK && king_rank+1 < 8 && king_file-1 >= 0){
         Figure attackPawn = board[king_rank+1][king_file-1];
@@ -447,19 +612,16 @@ int ChessBoard::kingIntoCheck(int rank_from, int file_from, int rank_to, int fil
         }
     }
 
-    for(int i=king_rank+1; i<8; i++){
-        for(int j=king_file-1; j>=0; j--){
-            Figure curr = board[i][j];
-            if(curr.color == turn) break;    
-            if(curr.color == !turn && (curr.type == BISHOP_TYPE || curr.type == QUEEN_TYPE)){
-                isInCheck = 1;
-                goto cleanup;
-            }
+    for(int i=king_rank+1, j=king_file-1; i<8 && j>=0; i++, j--){
+        Figure curr = board[i][j];
+        if(curr.color == turn) break;    
+        if(curr.color == !turn && (curr.type == BISHOP_TYPE || curr.type == QUEEN_TYPE)){
+            isInCheck = 1;
+            goto cleanup;
         }
     }
 
     // diagonal traversal, bottom-right of king
-
     // Special case: check if white pawn attacks black king
     if(turn == BLACK && king_rank+1 < 8 && king_file+1 < 8){
         Figure attackPawn = board[king_rank+1][king_file+1];
@@ -469,19 +631,16 @@ int ChessBoard::kingIntoCheck(int rank_from, int file_from, int rank_to, int fil
         }
     }
 
-    for(int i=king_rank+1; i<8; i++){
-        for(int j=king_file+1; j<8; j++){
-            Figure curr = board[i][j];
-            if(curr.color == turn) break;    
-            if(curr.color == !turn && (curr.type == BISHOP_TYPE || curr.type == QUEEN_TYPE)){
-                isInCheck = 1;
-                goto cleanup;
-            }
+    for(int i=king_rank+1, j=king_file+1; i<8 && j<8; i++, j++){
+        Figure curr = board[i][j];
+        if(curr.color == turn) break;    
+        if(curr.color == !turn && (curr.type == BISHOP_TYPE || curr.type == QUEEN_TYPE)){
+            isInCheck = 1;
+            goto cleanup;
         }
     }
 
     // diagonal traversal, top-left of king
-
     // Special case: check if black pawn attacks white king
     if(turn == WHITE && king_rank-1 >= 0 && king_file-1 >= 0){
         Figure attackPawn = board[king_rank-1][king_file-1];
@@ -491,19 +650,17 @@ int ChessBoard::kingIntoCheck(int rank_from, int file_from, int rank_to, int fil
         }
     }
 
-    for(int i=king_rank-1; i>=0; i--){
-        for(int j=king_file-1; j>=0; j--){
-            Figure curr = board[i][j];
-            if(curr.color == turn) break;    
-            if(curr.color == !turn && (curr.type == BISHOP_TYPE || curr.type == QUEEN_TYPE)){
-                isInCheck = 1;
-                goto cleanup;
-            }
+    for(int i=king_rank-1, j=king_file-1; i>=0 && j>=0; i--, j--){
+        Figure curr = board[i][j];
+        if(curr.color == turn) break;    
+        if(curr.color == !turn && (curr.type == BISHOP_TYPE || curr.type == QUEEN_TYPE)){
+            isInCheck = 1;
+            goto cleanup;
         }
+        
     }
 
     // diagonal traversal, top-right of king
-
     // Special case: check if black pawn attacks white king
     if(turn == WHITE && king_rank-1 >= 0 && king_file+1 < 8){
         Figure attackPawn = board[king_rank-1][king_file+1];
@@ -513,17 +670,15 @@ int ChessBoard::kingIntoCheck(int rank_from, int file_from, int rank_to, int fil
         }
     }
 
-    for(int i=king_rank-1; i>=0; i--){
-        for(int j=king_file+1; j<8; j++){
-            Figure curr = board[i][j];
-            if(curr.color == turn) break;    
-            if(curr.color == !turn && (curr.type == BISHOP_TYPE || curr.type == QUEEN_TYPE)){
-                isInCheck = 1;
-                goto cleanup;
-            }
+    for(int i=king_rank-1, j=king_file+1; i>=0 && j<8; i--, j++){
+        Figure curr = board[i][j];
+        if(curr.color == turn) break;    
+        if(curr.color == !turn && (curr.type == BISHOP_TYPE || curr.type == QUEEN_TYPE)){
+            isInCheck = 1;
+            goto cleanup;
         }
     }
-
+    
 
     // Check enemy knight locations
 
@@ -608,6 +763,8 @@ int ChessBoard::kingIntoCheck(int rank_from, int file_from, int rank_to, int fil
             }
         }
     }
+
+    
 
     // Clean up board to before-move state
     cleanup:
