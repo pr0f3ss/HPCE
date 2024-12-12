@@ -438,56 +438,53 @@ int ChessBoard::handleBishop(std::string move, int &rank_from, int &file_from,
       rank_to = rank;
       file_to = file;
 
-      // copied mostly from kingIntoCheck()
-
       // diagonal traversal, bottom-left
       for (int i = rank_to + 1, j = file_to - 1; i < 8 && j >= 0; i++, j--) {
-        Figure curr = board[i][j];
-        if (curr.color == turn && curr.type == BISHOP_TYPE) {
-          rank_from = i;
-          file_from = j;
-          return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
-        }
-        if (curr.color == !turn)
+        rank_from = i;
+        file_from = j;
+        int ret_move_legal =
+            is_bishop_move_into_check(rank_from, file_from, rank_to, file_to);
+        if (ret_move_legal < 0)
           break;
+        else
+          return ret_move_legal;
       }
 
       // diagonal traversal, bottom-right
 
       for (int i = rank_to + 1, j = file_to + 1; i < 8 && j < 8; i++, j++) {
-        Figure curr = board[i][j];
-        if (curr.color == turn && curr.type == BISHOP_TYPE) {
-          rank_from = i;
-          file_from = j;
-          return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
-        }
-        if (curr.color == !turn)
+        rank_from = i;
+        file_from = j;
+        int ret_move_legal =
+            is_bishop_move_into_check(rank_from, file_from, rank_to, file_to);
+        if (ret_move_legal < 0)
           break;
+        else
+          return ret_move_legal;
       }
 
       // diagonal traversal, top-left
-
       for (int i = rank_to - 1, j = file_to - 1; i >= 0 && j >= 0; i--, j--) {
-        Figure curr = board[i][j];
-        if (curr.color == turn && curr.type == BISHOP_TYPE) {
-          rank_from = i;
-          file_from = j;
-          return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
-        }
-        if (curr.color == !turn)
+        rank_from = i;
+        file_from = j;
+        int ret_move_legal =
+            is_bishop_move_into_check(rank_from, file_from, rank_to, file_to);
+        if (ret_move_legal < 0)
           break;
+        else
+          return ret_move_legal;
       }
 
       // diagonal traversal, top-right
       for (int i = rank_to - 1, j = file_to + 1; i >= 0 && j < 8; i--, j++) {
-        Figure curr = board[i][j];
-        if (curr.color == turn && curr.type == BISHOP_TYPE) {
-          rank_from = i;
-          file_from = j;
-          return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
-        }
-        if (curr.color == !turn)
+        rank_from = i;
+        file_from = j;
+        int ret_move_legal =
+            is_bishop_move_into_check(rank_from, file_from, rank_to, file_to);
+        if (ret_move_legal < 0)
           break;
+        else
+          return ret_move_legal;
       }
       return 0;
     } else { // disambiguous case, no capture
@@ -1144,3 +1141,27 @@ int ChessBoard::file_to_int(char file) {
  * @param output 1 if character notation is referring to file, else 0
  */
 int ChessBoard::is_file(char char_notation) { return isdigit(char_notation); }
+
+/**
+ * Returns 1 if bishop moves own king into check (1 = check, 0 = no check, -1 =
+ * figure not found, -2 = other figure is blocking path).
+ * Returns non-negative integer if and only if bishop figure has been found
+ * @param output int
+ * @param output rank of figure before move
+ * @param output file of figure before move
+ * @param output rank of figure after move
+ * @param output file of figure after move
+ */
+int ChessBoard::is_bishop_move_into_check(int &rank_from, int &file_from,
+                                          int &rank_to, int &file_to) {
+  Figure curr = board[rank_from][file_from];
+  if (curr.color == turn) {
+    if (curr.type == BISHOP_TYPE)
+      return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
+    else
+      return -2;
+  } else if (curr.color != turn && curr.empty != 0) {
+    return -2;
+  }
+  return -1;
+}
