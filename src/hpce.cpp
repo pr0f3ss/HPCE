@@ -490,9 +490,77 @@ int ChessBoard::handleBishop(std::string move, int &rank_from, int &file_from,
           break;
       }
       return 0;
-    } else { // disambiguous case
-      // todo: implement
-      return 1;
+    } else { // disambiguous case, no capture
+      // Moving piece is uniquely identified by specifying the piece's letter,
+      // followed by (in descending order of preference):
+      //
+      // 1. the file of departure (if they differ)
+      // 2. the rank of departure (if the files are the same but the ranks
+      // differ)
+      //
+      // If neither file nor rank alone is sufficient to identify the piece
+      // (such as when three or more pieces of the same type can move to the
+      // same square), then both are specified (double disambiguation).
+
+      if (move.length() == 4) { // file or rank disambiguouation
+        int uses_file = is_file(move[1]);
+        int file = file_to_int(move[2]);
+        int rank = 8 - (move[3] - '0');
+
+        rank_to = rank;
+        file_to = file;
+
+        if (uses_file) {
+          file_from = file_to_int(move[1]);
+
+          int dist = file_from - file_to;
+
+          rank_from = rank_to + dist;
+          Figure curr = board[rank_from][file_from];
+          if (curr.color == turn && curr.type == BISHOP_TYPE) {
+            return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
+          }
+
+          rank_from = rank_to - dist;
+          curr = board[rank_from][file_from];
+          if (curr.color == turn && curr.type == BISHOP_TYPE) {
+            return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
+          }
+
+          return 0;
+
+        } else {
+          rank_from = 8 - (move[2] - '0');
+
+          int dist = rank_from - rank_to;
+
+          file_from = file_to + dist;
+          Figure curr = board[rank_from][file_from];
+          if (curr.color == turn && curr.type == BISHOP_TYPE) {
+            return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
+          }
+
+          file_from = file_to - dist;
+          curr = board[rank_from][file_from];
+          if (curr.color == turn && curr.type == BISHOP_TYPE) {
+            return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
+          }
+        }
+
+      } else { // both from rank and file locations are in notation
+        file_from = file_to_int(move[1]);
+        rank_from = 8 - (move[2] - '0');
+
+        file_to = file_to_int(move[3]);
+        rank_to = 8 - (move[4] - '0');
+
+        Figure curr = board[rank_from][file_from];
+        if (curr.color == turn && curr.type == BISHOP_TYPE) {
+          return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
+        }
+      }
+
+      return 0;
     }
   }
 }
@@ -1068,3 +1136,11 @@ int ChessBoard::file_to_int(char file) {
     exit(1);
   }
 }
+
+/**
+ * Returns whether the current character is referring to a file or rank (1 =
+ * file).
+ * @param input input character notation
+ * @param output 1 if character notation is referring to file, else 0
+ */
+int ChessBoard::is_file(char char_notation) { return isdigit(char_notation); }
