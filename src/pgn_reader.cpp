@@ -24,6 +24,24 @@ PGN_Chess_Game::PGN_Chess_Game(std::map<std::string, std::string> tag_pairs)
 PGN_Chess_Game::~PGN_Chess_Game() {}
 
 /**
+ * Adds move to chess game. Returns 1 if operation was successful.
+ * TODO: Add error logic
+ */
+int PGN_Chess_Game::addMove(Move move) {
+  move_sequence.push_back(move);
+
+  return 1;
+}
+
+/**
+ * Retrieves the move sequence.
+ * TODO: Add error logic
+ */
+std::vector<Move> PGN_Chess_Game::getMoveSequence(void){
+  return move_sequence;
+}
+
+/**
  * Default constructor. Initializes PGN Reader class.
  */
 PGN_Reader::PGN_Reader() {}
@@ -78,9 +96,14 @@ std::vector<PGN_Chess_Game> PGN_Reader::return_games(std::string file_path) {
         if (curr_move.empty())
           break;
         std::cout << curr_move << "\n";
+        // Process move as Move and add to current chess game
       }
+
+      pgn_chess_games.push_back(curr_chess_game);
     }
   }
 
   if_reader.close();
+
+  return pgn_chess_games;
 }

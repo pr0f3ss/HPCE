@@ -2,6 +2,8 @@
 #define _HPCE_H
 
 #include <string>
+#include <vector>
+#include "pgn_reader.h"
 
 #define board_size 8
 #define players 2
@@ -58,6 +60,7 @@ public:
 
 private:
   void initBoard();
+  int isLegalGame(PGN_Chess_Game chess_game);
   int isLegalMove(std::string move, int &rank_from, int &file_from,
                   int &rank_to, int &file_to);
 

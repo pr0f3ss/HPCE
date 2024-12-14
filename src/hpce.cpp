@@ -1,4 +1,5 @@
 #include "hpce.h"
+#include "pgn_reader.h"
 #include <cctype>
 #include <cstdlib>
 #include <iostream>
@@ -171,6 +172,23 @@ int ChessBoard::getScore() {
       score += curr.color ? -curr.value : curr.value;
     }
   }
+}
+
+/**
+ * Returns 1 if and only if all move sequences in referenced game are legal.
+ * @param input pgn-based chess game
+ * @param output 1 iff legal, else 0.
+ */
+int ChessBoard::isLegalGame(PGN_Chess_Game game) {
+  turn = 0;
+
+  initBoard();
+
+  std::vector<Move> move_sequence = game.getMoveSequence();
+
+  // TODO: Implement error logic
+  for (Move move : move_sequence)
+    playMove(move.move_notation);
 }
 
 /**

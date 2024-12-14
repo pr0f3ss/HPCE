@@ -20,8 +20,12 @@ public:
   PGN_Chess_Game(std::map<std::string, std::string> tag_pairs);
   ~PGN_Chess_Game(void);
 
+  int addMove(Move move);
+  std::vector<Move> getMoveSequence(void);
+
 private:
   std::map<std::string, std::string> tag_pairs;
+  std::vector<Move> move_sequence;
 };
 
 class PGN_Reader {
