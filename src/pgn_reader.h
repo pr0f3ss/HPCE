@@ -7,6 +7,13 @@
 #include <string>
 #include <vector>
 
+struct Move {
+  int move_nr;
+  int turn;
+  std::string move_notation;
+  int is_terminator;
+};
+
 class PGN_Chess_Game {
 
 public:
