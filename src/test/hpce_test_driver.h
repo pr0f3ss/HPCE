@@ -8,8 +8,6 @@ public:
   ~HPCE_Test_Driver(void);
 
 private:
-  
 };
-
 
 #endif

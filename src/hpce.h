@@ -82,8 +82,8 @@ private:
   int kingIntoCheck(int rank_from, int file_from, int rank_to, int file_to);
   int file_to_int(char file);
   int is_file(char char_notation);
-  int is_bishop_move_into_check(int &rank_from, int &file_from,
-                             int &rank_to, int &file_to);
+  int is_bishop_move_into_check(int &rank_from, int &file_from, int &rank_to,
+                                int &file_to);
 };
 
 #endif
