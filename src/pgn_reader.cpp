@@ -1,5 +1,5 @@
-#include "pgn_reader.h"
-#include "hpce.h"
+#include "../include/pgn_reader.hpp"
+#include "../include/hpce.hpp"
 
 #include <algorithm>
 #include <fstream>

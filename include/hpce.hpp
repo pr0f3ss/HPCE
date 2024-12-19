@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include "pgn_reader.h"
+#include "pgn_reader.hpp"
 
 #define board_size 8
 #define players 2

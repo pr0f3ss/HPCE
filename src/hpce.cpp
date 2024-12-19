@@ -1,12 +1,12 @@
-#include "hpce.h"
-#include "pgn_reader.h"
+#include "../include/hpce.hpp"
+#include "../include/pgn_reader.hpp"
 #include <cctype>
 #include <cstdlib>
 #include <iostream>
 #include <string>
 
 /**
- * Default constructor. Initializes board and variables and prints the board.
+ * Default constructor. Initializes board and variagbles and prints the board.
  */
 ChessBoard::ChessBoard() {
   turn = 0;
@@ -110,6 +110,8 @@ int ChessBoard::printBoard() {
     }
     std::cout << "\n________________\n";
   }
+
+  return 1;
 }
 
 /**
