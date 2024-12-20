@@ -39,4 +39,4 @@ if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
-target_include_directories(CMakeDemo PUBLIC include/)
+#target_include_directories(CMakeHPCE PUBLIC include/)

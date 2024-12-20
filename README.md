@@ -51,6 +51,13 @@ HPCE is a high-performance chess engine written in C++ that supports:
    make
    ```
 
+   For Windows MinGW-based systems use:
+      ```bash
+   mkdir build && cd build
+   cmake -G "MinGW Makefiles" ..
+   make
+   ```
+
 3. Run the tests:
    ```bash
    ./hpce_tests
