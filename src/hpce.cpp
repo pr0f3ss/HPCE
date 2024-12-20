@@ -174,6 +174,7 @@ int ChessBoard::getScore() {
       score += curr.color ? -curr.value : curr.value;
     }
   }
+  return score;
 }
 
 /**
@@ -191,6 +192,8 @@ int ChessBoard::isLegalGame(PGN_Chess_Game game) {
   // TODO: Implement error logic
   for (Move move : move_sequence)
     playMove(move.move_notation);
+
+  return 0;
 }
 
 /**
@@ -428,6 +431,7 @@ int ChessBoard::handleKnight(std::string move, int &rank_from, int &file_from,
 
       rank_to = rank;
       file_to = file;
+      return 1;
     } else { // ambiguous move
       // todo: implement
       return 1;
@@ -809,6 +813,8 @@ int ChessBoard::handleKing(std::string move, int &rank_from, int &file_from,
     return 1;
   } else { // no capture case
   }
+  
+  return 1;
 }
 
 /**
