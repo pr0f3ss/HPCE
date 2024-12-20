@@ -6,3 +6,5 @@
 *.out
 /.vscode/
 build/
+bin/
+lib/

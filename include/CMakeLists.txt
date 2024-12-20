@@ -1,8 +1,8 @@
-set(CMakeHPCE_INC
+set(HPCE_INC
     hpce.hpp
     pgn_reader.hpp
     hpce_test_driver.hpp
 )
 
-PREPEND(CMakeHPCE_INC)
-set(CMakeHPCE_INC ${CMakeHPCE_INC}  PARENT_SCOPE)
+PREPEND(HPCE_INC)
+set(HPCE_INC ${HPCE_INC}  PARENT_SCOPE)

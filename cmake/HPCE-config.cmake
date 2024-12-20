@@ -8,4 +8,4 @@ include(CMakeFindDependencyMacro)
 # Add the targets file. include() just loads and executes the CMake code in the
 # file passed to it. Note that the file loaded here is the same one generated in
 # the second install() command in the root-level CMakeLists.txt
-include("${CMAKE_CURRENT_LIST_DIR}/CMakeHPCETargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/HPCETargets.cmake")

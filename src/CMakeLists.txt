@@ -1,7 +1,7 @@
-set(CMakeHPCE_SRC
+set(HPCE_SRC
     hpce.cpp
     pgn_reader.cpp
 )
 
-PREPEND(CMakeHPCE_SRC)
-set(CMakeHPCE_SRC ${CMakeHPCE_SRC}  PARENT_SCOPE)
+PREPEND(HPCE_SRC)
+set(HPCE_SRC ${HPCE_SRC}  PARENT_SCOPE)
