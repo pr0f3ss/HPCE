@@ -45,10 +45,42 @@ find_library(HPCE_LIB
         lib
 )
 
-# Find the path to the file "source_file.hpp" on the system. Store the final
+# Find the path to the header source files on the system. Store the final
 # path in the variables HPCE_INCLUDE_DIR. The HINTS, PATHS, and
 # PATH_SUFFIXES, arguments have the same meaning as in find_library().
-find_path(HPCE_INCLUDE_DIR source_file.hpp
+find_path(HPCE_INCLUDE_DIR hpce.hpp
+    HINTS
+        ${HPCE_DIR}
+        ${HPCE_DIR}
+        $ENV{HPCE_DIR}
+        $ENV{HPCE_DIR}
+        ENV HPCE_DIR
+    PATHS
+        /usr
+        /usr/local
+        /usr/local/include
+        ${inc_glob}
+    PATH_SUFFIXES 
+        include
+)
+
+find_path(HPCE_INCLUDE_DIR pgn_reader.hpp
+    HINTS
+        ${HPCE_DIR}
+        ${HPCE_DIR}
+        $ENV{HPCE_DIR}
+        $ENV{HPCE_DIR}
+        ENV HPCE_DIR
+    PATHS
+        /usr
+        /usr/local
+        /usr/local/include
+        ${inc_glob}
+    PATH_SUFFIXES 
+        include
+)
+
+find_path(HPCE_INCLUDE_DIR hpce_test_driver.hpp
     HINTS
         ${HPCE_DIR}
         ${HPCE_DIR}

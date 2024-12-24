@@ -3,12 +3,12 @@ set(CMAKE_CXX_STANDARD 17)
 
 # 
 set(HPCE_TESTS_SRC
-    hpce_test_driver.cpp
     hpce_tests.cpp
+    hpce_test_driver.cpp
 )
 
 set(HPCE_TESTS_HEADER
-    catch_amalgamated.hpp
+    catch.hpp
 )
 
 PREPEND(HPCE_TESTS_SRC)
