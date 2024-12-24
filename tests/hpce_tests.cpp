@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 
-#include "catch_amalgamated.hpp"
+#include "catch.hpp"
 #include "../include/hpce.hpp"
 #include "../include/hpce_test_driver.hpp"
 #include <iostream>
