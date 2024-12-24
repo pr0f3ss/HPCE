@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 project(HPCE VERSION 1.0)
 set(HPCE_VERSION 1.0)
@@ -77,7 +77,7 @@ target_include_directories(HPCE PUBLIC
 # specify LAPACK::LAPACK for linking so that we can avoid using the variables.
 # However, each package is different and one must check the documentation to 
 # see what variables are defined.
-target_link_libraries(HPCE ${LAPACK_LIBRARIES})
+# target_link_libraries(HPCE ${LAPACK_LIBRARIES})
 
 # Install HPCE in CMAKE_INSTALL_PREFIX (defaults to /usr/local on linux). 
 # To change the install location, run 

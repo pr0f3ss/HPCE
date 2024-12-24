@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 # 
 set(HPCE_TESTS_SRC
@@ -8,9 +8,8 @@ set(HPCE_TESTS_SRC
 )
 
 set(HPCE_TESTS_HEADER
-    catch.hpp
+    catch_amalgamated.hpp
 )
-
 
 PREPEND(HPCE_TESTS_SRC)
 
