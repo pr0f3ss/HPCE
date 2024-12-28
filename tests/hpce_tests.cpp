@@ -7,6 +7,6 @@
 #include <string>
 
 TEST_CASE("Test a_library_function", "[unit-test]"){
-    //HPCE_Test_Driver test_driver = HPCE_Test_Driver();
+    HPCE_Test_Driver test_driver = HPCE_Test_Driver();
     REQUIRE(1 == 1);
 }
