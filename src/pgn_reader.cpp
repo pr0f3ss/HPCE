@@ -11,6 +11,17 @@
 #include <string.h>
 #include <string>
 #include <vector>
+#include <cctype>
+
+// Helps trim the getline strings from pgn files.
+void trimString(std::string& str) {
+    str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](unsigned char ch) {
+        return !std::isspace(ch) && ch != '[' && ch != ']';
+    }));
+    str.erase(std::find_if(str.rbegin(), str.rend(), [](unsigned char ch) {
+        return !std::isspace(ch) && ch != '[' && ch != ']';
+    }).base(), str.end());
+}
 
 /**
  * Default constructor. Initializes PGN Chess Game class.
@@ -32,6 +43,14 @@ int PGN_Chess_Game::addMove(Move move) {
 
   return 1;
 }
+
+/**
+ * Retrieves the tag pairs.
+ */
+std::map<std::string, std::string> PGN_Chess_Game::get_tag_pairs(void){
+  return tag_pairs;
+}
+
 
 /**
  * Retrieves the move sequence.
@@ -62,24 +81,27 @@ std::vector<PGN_Chess_Game> PGN_Reader::return_games(std::string file_path) {
   std::string curr_move;
 
   // Define regex for tag pair tokenizer
-  std::regex re("\\[([^\\s]+) \\\"([^\\\"]+)\\\"]");
+  std::regex re("(\\w+)\\s+\"([^\"]+)\"");
   std::smatch match;
 
   if (if_reader.is_open()) {
     while (!if_reader.eof()) {
       // Initialize current chess game
-      std::vector<std::string> tag_pairs; // non-tokenized tag pairs
+      std::vector<std::string> str_tag_pairs; // non-tokenized tag pairs
       std::map<std::string, std::string>
           curr_tp; // used to initialize chess game
 
       // Read current tag pairs and subsequently construct PGN_Chess_Game
       while (std::getline(if_reader, tp)) {
-        if (tp.empty())
+        if (tp.empty() || tp.find_first_not_of(" \t\r\n") == std::string::npos)
           break;
-        tag_pairs.push_back(tp);
+
+        str_tag_pairs.push_back(tp);
       }
 
-      for (std::string s : tag_pairs) {
+      for (std::string s : str_tag_pairs) {
+        trimString(s);
+
         if (std::regex_match(s, match, re)) {
           std::string key = match[1].str();
           std::string value = match[2].str();
@@ -95,7 +117,7 @@ std::vector<PGN_Chess_Game> PGN_Reader::return_games(std::string file_path) {
       while (std::getline(if_reader, curr_move)) {
         if (curr_move.empty())
           break;
-        std::cout << curr_move << "\n";
+        //std::cout << curr_move << "\n";
         // Process move as Move and add to current chess game
       }
 

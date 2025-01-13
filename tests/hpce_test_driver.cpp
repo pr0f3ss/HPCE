@@ -11,10 +11,19 @@ HPCE_Test_Driver::HPCE_Test_Driver() {
 
 
   std::vector<PGN_Chess_Game> test_games =
-      pgn_reader.return_games("data/Abdusattorov.pgn");
+      pgn_reader.return_games("../data/Abdusattorov.pgn");
 
   for (PGN_Chess_Game game : test_games) {
-    
+
+    std::map<std::string, std::string>::iterator it;
+
+    for (it = game.get_tag_pairs().begin(); it != game.get_tag_pairs().end(); it++)
+    {
+        std::cout << it->first    // key
+                  << ':'
+                  << it->second   // val 
+                  << std::endl;
+    }
   }
 }
 
