@@ -11,7 +11,6 @@ struct Move {
   int move_nr;
   int turn;
   std::string move_notation;
-  int is_terminator;
 };
 
 class PGN_Chess_Game {
@@ -22,7 +21,7 @@ public:
 
   int addMove(Move move);
   std::map<std::string, std::string> get_tag_pairs(void);
-  std::vector<Move> getMoveSequence(void);
+  std::vector<Move> get_move_sequence(void);
 
 private:
   std::map<std::string, std::string> tag_pairs;
