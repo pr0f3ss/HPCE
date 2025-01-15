@@ -15,14 +15,17 @@ HPCE_Test_Driver::HPCE_Test_Driver() {
 
   for (PGN_Chess_Game game : test_games) {
 
-    std::map<std::string, std::string>::iterator it;
-
-    for (it = game.get_tag_pairs().begin(); it != game.get_tag_pairs().end(); it++)
+    for (const auto &p : game.get_tag_pairs())
     {
-        std::cout << it->first    // key
+        std::cout << p.first    // key
                   << ':'
-                  << it->second   // val 
+                  << p.second   // val 
                   << std::endl;
+    }
+
+    std::vector<Move> move_set = game.get_move_sequence();
+    for(const Move& move : move_set){
+      std::cout << move.move_notation << "\n";
     }
   }
 }

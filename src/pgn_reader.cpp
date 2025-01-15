@@ -56,7 +56,7 @@ std::map<std::string, std::string> PGN_Chess_Game::get_tag_pairs(void){
  * Retrieves the move sequence.
  * TODO: Add error logic
  */
-std::vector<Move> PGN_Chess_Game::getMoveSequence(void){
+std::vector<Move> PGN_Chess_Game::get_move_sequence(void){
   return move_sequence;
 }
 
@@ -99,26 +99,46 @@ std::vector<PGN_Chess_Game> PGN_Reader::return_games(std::string file_path) {
         str_tag_pairs.push_back(tp);
       }
 
+      // Match key and value from each tag pair string and add into tag pair map
       for (std::string s : str_tag_pairs) {
         trimString(s);
-
         if (std::regex_match(s, match, re)) {
           std::string key = match[1].str();
           std::string value = match[2].str();
-          curr_tp[key] = value;
+          curr_tp.insert({key, value});
         } else {
           std::cerr << "The tag pair format is incorrect." << std::endl;
         }
       }
 
+      // Initialize game from current tag pair map
       PGN_Chess_Game curr_chess_game = PGN_Chess_Game(curr_tp);
 
-      // Read current move sequence and add moves to PGN_Chess_Game
+      // Continue reading moves and add them to PGN_Chess_Game
       while (std::getline(if_reader, curr_move)) {
-        if (curr_move.empty())
+        if (curr_move.empty() || curr_move.find_first_not_of(" \t\r\n") == std::string::npos)
           break;
-        //std::cout << curr_move << "\n";
-        // Process move as Move and add to current chess game
+
+        trimString(curr_move);
+
+        std::regex move_regex(R"((\d+)\.([^\s]+)(?:\s+([^\d]+))?)");
+        std::sregex_iterator it(curr_move.begin(), curr_move.end(), move_regex);
+        std::sregex_iterator end;
+
+        while (it != end) {
+            std::smatch match = *it;
+            int move_number = std::stoi(match[1]);   // Move number
+            std::string white_move = match[2];       // White move
+            std::string black_move = match[3];       // Black move (may be empty)
+
+            Move white = {move_number, 0, white_move};
+            Move black = {move_number, 1, black_move};
+
+            curr_chess_game.addMove(white);
+            curr_chess_game.addMove(black);
+
+            ++it;
+        }
       }
 
       pgn_chess_games.push_back(curr_chess_game);
