@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 
-TEST_CASE("Test a_library_function", "[unit-test]"){
+TEST_CASE("Test main_test_driver", "[unit-test]"){
     HPCE_Test_Driver test_driver = HPCE_Test_Driver();
     REQUIRE(1 == 1);
 }
