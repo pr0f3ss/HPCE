@@ -81,7 +81,7 @@ std::vector<PGN_Chess_Game> PGN_Reader::return_games(std::string file_path) {
   std::string curr_move;
 
   // Define regex for tag pair tokenizer
-  std::regex re("(\\w+)\\s+\"([^\"]+)\"");
+  std::regex re(R"((\w+)\s+\"([^\"]*)\")");
   std::smatch match;
 
   if (if_reader.is_open()) {
@@ -105,6 +105,11 @@ std::vector<PGN_Chess_Game> PGN_Reader::return_games(std::string file_path) {
         if (std::regex_match(s, match, re)) {
           std::string key = match[1].str();
           std::string value = match[2].str();
+
+          if ((key == "WhiteElo" || key == "BlackElo") && value.empty()) {
+              value = "-1";
+          }
+
           curr_tp.insert({key, value});
         } else {
           std::cerr << "The tag pair format is incorrect." << std::endl;
@@ -121,7 +126,7 @@ std::vector<PGN_Chess_Game> PGN_Reader::return_games(std::string file_path) {
 
         trimString(curr_move);
 
-        std::regex move_regex(R"((\d+)\.([^\s]+)(?:\s+([^\d]+))?)");
+        std::regex move_regex(R"((\d+)\.([^\s]+)\s+([^\s]+)?)");
         std::sregex_iterator it(curr_move.begin(), curr_move.end(), move_regex);
         std::sregex_iterator end;
 
