@@ -37,6 +37,8 @@ public:
   std::vector<PGN_Chess_Game> return_games(std::string file_path);
 
 private:
+  std::vector<std::string> seven_tag_roster = {"Event", "Site", "Date", "Round", "White", "Black", "Result"};
+  int validate_tag_pair_map(std::map<std::string, std::string> tag_pair_map); 
 };
 
 #endif

@@ -91,13 +91,20 @@ std::vector<PGN_Chess_Game> PGN_Reader::return_games(std::string file_path) {
       std::map<std::string, std::string>
           curr_tp; // used to initialize chess game
 
-      // Read current tag pairs and subsequently construct PGN_Chess_Game
+      // Skip initial whitespace lines
       while (std::getline(if_reader, tp)) {
-        if (tp.empty() || tp.find_first_not_of(" \t\r\n") == std::string::npos)
-          break;
-
-        str_tag_pairs.push_back(tp);
+          if (!tp.empty() && tp.find_first_not_of(" \t\r\n") != std::string::npos) {
+              break;
+          }
       }
+
+      // Read current tag pairs until newline
+      do {
+        if (tp.empty() || tp.find_first_not_of(" \t\r\n") == std::string::npos) {
+            break;
+        }
+        str_tag_pairs.push_back(tp);
+      } while (std::getline(if_reader, tp));
 
       // Match key and value from each tag pair string and add into tag pair map
       for (std::string s : str_tag_pairs) {
@@ -116,11 +123,26 @@ std::vector<PGN_Chess_Game> PGN_Reader::return_games(std::string file_path) {
         }
       }
 
+      // The tag pairs are required to have at least the seven tag roster
+      // [Event, Site, Date, Round, White, Black, Result]
+      // Additionally, optional tag pairs may be specified.
+      if (!validate_tag_pair_map(curr_tp)){
+        std::cerr << "Current Tag pair does not contain the seven tag roster." << std::endl;
+        // break;
+      }
+
       // Initialize game from current tag pair map
       PGN_Chess_Game curr_chess_game = PGN_Chess_Game(curr_tp);
 
-      // Continue reading moves and add them to PGN_Chess_Game
+      // Skip whitespace lines before the notation section
       while (std::getline(if_reader, curr_move)) {
+          if (!curr_move.empty() && curr_move.find_first_not_of(" \t\r\n") != std::string::npos) {
+              break;
+          }
+      }
+
+      // Continue reading moves and add them to PGN_Chess_Game
+      do {
         if (curr_move.empty() || curr_move.find_first_not_of(" \t\r\n") == std::string::npos)
           break;
 
@@ -144,13 +166,22 @@ std::vector<PGN_Chess_Game> PGN_Reader::return_games(std::string file_path) {
 
             ++it;
         }
-      }
+      } while (std::getline(if_reader, curr_move));
 
       pgn_chess_games.push_back(curr_chess_game);
     }
   }
 
   if_reader.close();
-
   return pgn_chess_games;
+}
+
+// Returns a positive number if the seven tag roster is contained within tag pair map
+int PGN_Reader::validate_tag_pair_map(std::map<std::string, std::string> tag_pair_map){
+  for(auto& tp : seven_tag_roster) {
+    if (tag_pair_map.find(tp) == tag_pair_map.end())
+      return 0;
+  }
+
+  return 1;
 }
