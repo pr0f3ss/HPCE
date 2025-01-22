@@ -1,9 +1,10 @@
 #ifndef _HPCE_H // include guard
 #define _HPCE_H
 
+#include "pgn_reader.hpp"
 #include <string>
 #include <vector>
-#include "pgn_reader.hpp"
+
 
 #define board_size 8
 #define players 2

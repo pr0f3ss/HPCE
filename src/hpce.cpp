@@ -190,8 +190,8 @@ int ChessBoard::isLegalGame(PGN_Chess_Game game) {
   std::vector<Move> move_sequence = game.get_move_sequence();
 
   // TODO: Implement error logic
-  //for (Move move : move_sequence)
-    //playMove(move.move_notation);
+  // for (Move move : move_sequence)
+  // playMove(move.move_notation);
 
   return 0;
 }
@@ -813,7 +813,7 @@ int ChessBoard::handleKing(std::string move, int &rank_from, int &file_from,
     return 1;
   } else { // no capture case
   }
-  
+
   return 1;
 }
 
