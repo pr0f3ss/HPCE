@@ -451,8 +451,18 @@ int ChessBoard::handleKnight(std::string move, int &rank_from, int &file_from,
 int ChessBoard::handleBishop(std::string move, int &rank_from, int &file_from,
                              int &rank_to, int &file_to) {
   if (move.find('x') != std::string::npos) { // capture case
-    // todo: implement
-    return 1;
+    if (move.length() == 4) {                // unambiguous move
+      int file = file_to_int(move[2]);
+      int rank = 8 - (move[3] - '0');
+
+      rank_to = rank;
+      file_to = file;
+
+      return check_diagonals(BISHOP_TYPE, rank_from, file_from, rank_to,
+                             file_to);
+    } else { // disambiguous case, capture case
+    }
+    return 0;
   } else {                    // no capture case
     if (move.length() == 3) { // unambiguous move
 
@@ -462,55 +472,8 @@ int ChessBoard::handleBishop(std::string move, int &rank_from, int &file_from,
       rank_to = rank;
       file_to = file;
 
-      // diagonal traversal, bottom-left
-      for (int i = rank_to + 1, j = file_to - 1; i < 8 && j >= 0; i++, j--) {
-        rank_from = i;
-        file_from = j;
-        int ret_move_legal =
-            is_bishop_move_into_check(rank_from, file_from, rank_to, file_to);
-        if (ret_move_legal < 0)
-          break;
-        else
-          return ret_move_legal;
-      }
-
-      // diagonal traversal, bottom-right
-
-      for (int i = rank_to + 1, j = file_to + 1; i < 8 && j < 8; i++, j++) {
-        rank_from = i;
-        file_from = j;
-        int ret_move_legal =
-            is_bishop_move_into_check(rank_from, file_from, rank_to, file_to);
-        if (ret_move_legal < 0)
-          break;
-        else
-          return ret_move_legal;
-      }
-
-      // diagonal traversal, top-left
-      for (int i = rank_to - 1, j = file_to - 1; i >= 0 && j >= 0; i--, j--) {
-        rank_from = i;
-        file_from = j;
-        int ret_move_legal =
-            is_bishop_move_into_check(rank_from, file_from, rank_to, file_to);
-        if (ret_move_legal < 0)
-          break;
-        else
-          return ret_move_legal;
-      }
-
-      // diagonal traversal, top-right
-      for (int i = rank_to - 1, j = file_to + 1; i >= 0 && j < 8; i--, j++) {
-        rank_from = i;
-        file_from = j;
-        int ret_move_legal =
-            is_bishop_move_into_check(rank_from, file_from, rank_to, file_to);
-        if (ret_move_legal < 0)
-          break;
-        else
-          return ret_move_legal;
-      }
-      return 0;
+      return check_diagonals(BISHOP_TYPE, rank_from, file_from, rank_to,
+                             file_to);
     } else { // disambiguous case, no capture
       // Moving piece is uniquely identified by specifying the piece's letter,
       // followed by (in descending order of preference):
@@ -1169,20 +1132,22 @@ int ChessBoard::file_to_int(char file) {
 int ChessBoard::is_file(char char_notation) { return isdigit(char_notation); }
 
 /**
- * Returns 1 if bishop moves own king into check (1 = check, 0 = no check, -1 =
+ * Returns 1 if figure moves own king into check (1 = check, 0 = no check, -1 =
  * figure not found, -2 = other figure is blocking path).
  * Returns non-negative integer if and only if bishop figure has been found
+ * @param input  int type of figure
  * @param output int
  * @param output rank of figure before move
  * @param output file of figure before move
  * @param output rank of figure after move
  * @param output file of figure after move
  */
-int ChessBoard::is_bishop_move_into_check(int &rank_from, int &file_from,
-                                          int &rank_to, int &file_to) {
+int ChessBoard::figure_moves_into_check(int figure_type, int &rank_from,
+                                        int &file_from, int &rank_to,
+                                        int &file_to) {
   Figure curr = board[rank_from][file_from];
   if (curr.color == turn) {
-    if (curr.type == BISHOP_TYPE)
+    if (curr.type == figure_type)
       return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
     else
       return -2;
@@ -1190,4 +1155,55 @@ int ChessBoard::is_bishop_move_into_check(int &rank_from, int &file_from,
     return -2;
   }
   return -1;
+}
+
+int ChessBoard::check_diagonals(int figure_type, int &rank_from, int &file_from,
+                                int &rank_to, int &file_to) {
+  // diagonal traversal, bottom-left
+  for (int i = rank_to + 1, j = file_to - 1; i < 8 && j >= 0; i++, j--) {
+    rank_from = i;
+    file_from = j;
+    int ret_move_legal = figure_moves_into_check(figure_type, rank_from,
+                                                 file_from, rank_to, file_to);
+    if (ret_move_legal < 0)
+      break;
+    else
+      return ret_move_legal;
+  }
+
+  // diagonal traversal, bottom-right
+  for (int i = rank_to + 1, j = file_to + 1; i < 8 && j < 8; i++, j++) {
+    rank_from = i;
+    file_from = j;
+    int ret_move_legal = figure_moves_into_check(figure_type, rank_from,
+                                                 file_from, rank_to, file_to);
+    if (ret_move_legal < 0)
+      break;
+    else
+      return ret_move_legal;
+  }
+
+  // diagonal traversal, top-left
+  for (int i = rank_to - 1, j = file_to - 1; i >= 0 && j >= 0; i--, j--) {
+    rank_from = i;
+    file_from = j;
+    int ret_move_legal = figure_moves_into_check(figure_type, rank_from,
+                                                 file_from, rank_to, file_to);
+    if (ret_move_legal < 0)
+      break;
+    else
+      return ret_move_legal;
+  }
+
+  // diagonal traversal, top-right
+  for (int i = rank_to - 1, j = file_to + 1; i >= 0 && j < 8; i--, j++) {
+    rank_from = i;
+    file_from = j;
+    int ret_move_legal = figure_moves_into_check(figure_type, rank_from,
+                                                 file_from, rank_to, file_to);
+    if (ret_move_legal < 0)
+      break;
+    else
+      return ret_move_legal;
+  }
 }

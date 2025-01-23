@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-
 #define board_size 8
 #define players 2
 #define dimension 2
@@ -86,8 +85,11 @@ private:
   int kingIntoCheck(int rank_from, int file_from, int rank_to, int file_to);
   int file_to_int(char file);
   int is_file(char char_notation);
-  int is_bishop_move_into_check(int &rank_from, int &file_from, int &rank_to,
-                                int &file_to);
+  int figure_moves_into_check(int figure_type, int &rank_from, int &file_from,
+                              int &rank_to, int &file_to);
+
+  int check_diagonals(int figure_type, int &rank_from, int &file_from,
+                      int &rank_to, int &file_to);
 };
 
 #endif
