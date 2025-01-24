@@ -54,35 +54,38 @@ class ChessBoard {
 public:
   ChessBoard(void);
   ~ChessBoard(void);
-  int playMove(std::string move);
-  int printBoard();
-  int getScore();
+  int play_move(std::string move);
+  int print_board();
+  int get_score();
 
 private:
-  void initBoard();
-  int isLegalGame(PGN_Chess_Game chess_game);
-  int isLegalMove(std::string move, int &rank_from, int &file_from,
+  void init_board();
+  int is_legal_game(PGN_Chess_Game chess_game);
+  int is_legal_move(std::string move, int &rank_from, int &file_from,
+                    int &rank_to, int &file_to);
+
+  int is_legal_figure_move(int figure_type, int &rank_from, int &file_from,
+                           int &rank_to, int &file_to);
+
+  int handle_pawn(std::string move, int &rank_from, int &file_from,
                   int &rank_to, int &file_to);
-
-  int handlePawn(std::string move, int &rank_from, int &file_from, int &rank_to,
-                 int &file_to);
-  int handleKnight(std::string move, int &rank_from, int &file_from,
-                   int &rank_to, int &file_to);
-  int handleBishop(std::string move, int &rank_from, int &file_from,
-                   int &rank_to, int &file_to);
-  int handleRook(std::string move, int &rank_from, int &file_from, int &rank_to,
-                 int &file_to);
-  int handleQueen(std::string move, int &rank_from, int &file_from,
+  int handle_knight(std::string move, int &rank_from, int &file_from,
+                    int &rank_to, int &file_to);
+  int handle_bishop(std::string move, int &rank_from, int &file_from,
+                    int &rank_to, int &file_to);
+  int handle_rook(std::string move, int &rank_from, int &file_from,
                   int &rank_to, int &file_to);
-  int handleKing(std::string move, int &rank_from, int &file_from, int &rank_to,
-                 int &file_to);
-  int handleCastling(std::string move, int &rank_from, int &file_from,
-                     int &rank_to, int &file_to);
+  int handle_queen(std::string move, int &rank_from, int &file_from,
+                   int &rank_to, int &file_to);
+  int handle_king(std::string move, int &rank_from, int &file_from,
+                  int &rank_to, int &file_to);
+  int handle_castling(std::string move, int &rank_from, int &file_from,
+                      int &rank_to, int &file_to);
 
-  int retrieveKnightLocation(std::string move, int &rank_from, int &file_from,
-                             int &rank_to, int &file_to);
+  int retrieve_knight_location(std::string move, int &rank_from, int &file_from,
+                               int &rank_to, int &file_to);
 
-  int kingIntoCheck(int rank_from, int file_from, int rank_to, int file_to);
+  int king_into_check(int rank_from, int file_from, int rank_to, int file_to);
   int file_to_int(char file);
   int is_file(char char_notation);
   int figure_moves_into_check(int figure_type, int &rank_from, int &file_from,
@@ -90,6 +93,10 @@ private:
 
   int check_diagonals(int figure_type, int &rank_from, int &file_from,
                       int &rank_to, int &file_to);
+
+  int handle_bishop_disambiguation(std::string move, int &rank_from,
+                                   int &file_from, int &rank_to, int &file_to,
+                                   bool is_capture);
 };
 
 #endif
