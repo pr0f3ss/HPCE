@@ -485,6 +485,7 @@ int ChessBoard::handleBishop(std::string move, int &rank_from, int &file_from,
       // If neither file nor rank alone is sufficient to identify the piece
       // (such as when three or more pieces of the same type can move to the
       // same square), then both are specified (double disambiguation).
+      Figure curr;
 
       if (move.length() == 4) { // file or rank disambiguouation
         int uses_file = is_file(move[1]);
@@ -496,41 +497,28 @@ int ChessBoard::handleBishop(std::string move, int &rank_from, int &file_from,
 
         if (uses_file) {
           file_from = file_to_int(move[1]);
-
           int dist = file_from - file_to;
 
-          rank_from = rank_to + dist;
-          Figure curr = board[rank_from][file_from];
-          if (curr.color == turn && curr.type == BISHOP_TYPE) {
-            return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
+          // Check two possible originating ranks for the bishop
+          for (int offset : {dist, -dist}) {
+            rank_from = rank_to + offset;
+            curr = board[rank_from][file_from];
+            if (curr.color == turn && curr.type == BISHOP_TYPE)
+              return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
           }
-
-          rank_from = rank_to - dist;
-          curr = board[rank_from][file_from];
-          if (curr.color == turn && curr.type == BISHOP_TYPE) {
-            return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
-          }
-
-          return 0;
 
         } else {
           rank_from = 8 - (move[2] - '0');
-
           int dist = rank_from - rank_to;
 
-          file_from = file_to + dist;
-          Figure curr = board[rank_from][file_from];
-          if (curr.color == turn && curr.type == BISHOP_TYPE) {
-            return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
-          }
-
-          file_from = file_to - dist;
-          curr = board[rank_from][file_from];
-          if (curr.color == turn && curr.type == BISHOP_TYPE) {
-            return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
+          // Check two possible originating files for the bishop
+          for (int offset : {dist, -dist}) {
+            file_from = file_to + offset;
+            curr = board[rank_from][file_from];
+            if (curr.color == turn && curr.type == BISHOP_TYPE)
+              return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
           }
         }
-
       } else { // both from rank and file locations are in notation
         file_from = file_to_int(move[1]);
         rank_from = 8 - (move[2] - '0');
@@ -538,10 +526,9 @@ int ChessBoard::handleBishop(std::string move, int &rank_from, int &file_from,
         file_to = file_to_int(move[3]);
         rank_to = 8 - (move[4] - '0');
 
-        Figure curr = board[rank_from][file_from];
-        if (curr.color == turn && curr.type == BISHOP_TYPE) {
+        curr = board[rank_from][file_from];
+        if (curr.color == turn && curr.type == BISHOP_TYPE)
           return !kingIntoCheck(rank_from, file_from, rank_to, file_to);
-        }
       }
 
       return 0;
