@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-
 // Helps trim the getline strings from pgn files.
 void trimString(std::string &str) {
   str.erase(str.begin(),
@@ -43,7 +42,7 @@ PGN_Chess_Game::~PGN_Chess_Game() {}
  * Adds move to chess game. Returns 1 if operation was successful.
  * TODO: Add error logic
  */
-int PGN_Chess_Game::addMove(Move move) {
+int PGN_Chess_Game::add_move(Move move) {
   move_sequence.push_back(move);
 
   return 1;
@@ -180,8 +179,8 @@ std::vector<PGN_Chess_Game> PGN_Reader::return_games(std::string file_path) {
           Move white = {move_number, 0, white_move};
           Move black = {move_number, 1, black_move};
 
-          curr_chess_game.addMove(white);
-          curr_chess_game.addMove(black);
+          curr_chess_game.add_move(white);
+          curr_chess_game.add_move(black);
 
           ++it;
         }

@@ -29,7 +29,7 @@ struct Figure {
   char symbol;
 };
 
-class ChessBoard {
+class Chess_Board {
 
   struct Figure w_pawn = {1, 0, 0, 0, 'p'};
   struct Figure b_pawn = {1, 0, 1, 0, 'P'};
@@ -52,8 +52,8 @@ class ChessBoard {
   int rook_moved[players][rook_amount]; // 0: queenside rook, 1: kingside rook
 
 public:
-  ChessBoard(void);
-  ~ChessBoard(void);
+  Chess_Board(void);
+  ~Chess_Board(void);
   int play_move(std::string move);
   int print_board();
   int get_score();

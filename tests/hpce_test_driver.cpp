@@ -6,7 +6,7 @@
  * Default constructor. Initializes test driver class.
  */
 HPCE_Test_Driver::HPCE_Test_Driver() {
-  ChessBoard board = ChessBoard();
+  Chess_Board board = Chess_Board();
   PGN_Reader pgn_reader = PGN_Reader();
 
   std::vector<PGN_Chess_Game> test_games =

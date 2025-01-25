@@ -24,7 +24,7 @@ public:
   PGN_Chess_Game(std::map<std::string, std::string> tag_pairs);
   ~PGN_Chess_Game(void);
 
-  int addMove(Move move);
+  int add_move(Move move);
   std::map<std::string, std::string> get_tag_pairs(void);
   std::vector<Move> get_move_sequence(void);
   void set_move_sequence(std::vector<Move> &p_move_sequence);

@@ -8,7 +8,7 @@
 #include <string>
 
 TEST_CASE("Test main_test_driver", "[unit-test]") {
-  ChessBoard board = ChessBoard();
+  Chess_Board board = Chess_Board();
   PGN_Reader pgn_reader = PGN_Reader();
 
   std::vector<PGN_Chess_Game> test_games =
