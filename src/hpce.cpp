@@ -190,10 +190,10 @@ int Chess_Board::is_legal_game(PGN_Chess_Game game) {
   std::vector<Move> move_sequence = game.get_move_sequence();
 
   // TODO: Implement error logic
-  // for (Move move : move_sequence)
-  // play_move(move.move_notation);
+  for (Move move : move_sequence)
+    play_move(move.move_notation);
 
-  return 0;
+  return 1;
 }
 
 /**
@@ -429,31 +429,111 @@ int Chess_Board::retrieve_knight_location(std::string move, int &rank_from,
  */
 int Chess_Board::handle_knight(std::string move, int &rank_from, int &file_from,
                                int &rank_to, int &file_to) {
-  if (move.find('x') != std::string::npos) { // capture case
+  bool is_capture = move.find('x') != std::string::npos;
 
-    if (move.length() == 4) { // unambiguous move
-      int file = file_to_int(move[2]);
-      int rank = 8 - (move[3] - '0');
-
-      rank_to = rank;
-      file_to = file;
+  if (is_capture) {
+    if (move.length() == 4) { // unambiguous capture
+      file_to = file_to_int(move[2]);
+      rank_to = 8 - (move[3] - '0');
+      // Check all possible knight moves to the target square
+      for (int rank_offset : {-2, -1, 1, 2}) {
+        for (int file_offset : {-2, -1, 1, 2}) {
+          if (abs(rank_offset) != abs(file_offset)) {
+            rank_from = rank_to + rank_offset;
+            file_from = file_to + file_offset;
+            if (is_legal_figure_move(KNIGHT_TYPE, rank_from, file_from, rank_to,
+                                     file_to))
+              return 1;
+          }
+        }
+      }
+    } else { // disambiguous capture
+      return handle_knight_disambiguation(move, rank_from, file_from, rank_to,
+                                          file_to, true);
     }
-
-    return 1;
-  } else {                    // no capture case
+  } else {                    // no capture
     if (move.length() == 3) { // unambiguous move
-
-      int file = file_to_int(move[1]);
-      int rank = 8 - (move[2] - '0');
-
-      rank_to = rank;
-      file_to = file;
-      return 1;
-    } else { // ambiguous move
-      // todo: implement
-      return 1;
+      file_to = file_to_int(move[1]);
+      rank_to = 8 - (move[2] - '0');
+      // Check all possible knight moves to the target square
+      for (int rank_offset : {-2, -1, 1, 2}) {
+        for (int file_offset : {-2, -1, 1, 2}) {
+          if (abs(rank_offset) != abs(file_offset)) {
+            rank_from = rank_to + rank_offset;
+            file_from = file_to + file_offset;
+            if (is_legal_figure_move(KNIGHT_TYPE, rank_from, file_from, rank_to,
+                                     file_to))
+              return 1;
+          }
+        }
+      }
+    } else { // disambiguous move
+      return handle_knight_disambiguation(move, rank_from, file_from, rank_to,
+                                          file_to, false);
     }
   }
+
+  return 0; // Illegal move
+}
+
+/**
+ * Handles the disambiguation logic for knight moves.
+ * @param input move notation
+ * @param output rank of figure before move
+ * @param output file of figure before me
+ * @param output rank of figure after move
+ * @param output file of figure after move
+ * @param input bool denoting if move captures piece
+ */
+int Chess_Board::handle_knight_disambiguation(std::string move, int &rank_from,
+                                              int &file_from, int &rank_to,
+                                              int &file_to, bool is_capture) {
+  int move_length = move.length();
+  int file_index = is_capture ? 3 : 2;
+  int rank_index = is_capture ? 4 : 3;
+
+  file_to = file_to_int(move[file_index]);
+  rank_to = 8 - (move[rank_index] - '0');
+
+  if (move_length == (is_capture ? 5 : 4)) { // file or rank disambiguation
+    if (is_file(move[1])) {                  // file disambiguation
+      file_from = file_to_int(move[1]);
+      // Check all possible knight moves from the specified file
+      for (int rank_offset : {-2, -1, 1, 2}) {
+        for (int file_offset : {-2, -1, 1, 2}) {
+          if (abs(rank_offset) != abs(file_offset)) {
+            rank_from = rank_to + rank_offset;
+            file_from = file_to + file_offset;
+            if (is_legal_figure_move(KNIGHT_TYPE, rank_from, file_from, rank_to,
+                                     file_to))
+              return true;
+          }
+        }
+      }
+    } else { // rank disambiguation
+      rank_from = 8 - (move[2] - '0');
+      // Check all possible knight moves from the specified rank
+      for (int rank_offset : {-2, -1, 1, 2}) {
+        for (int file_offset : {-2, -1, 1, 2}) {
+          if (abs(rank_offset) != abs(file_offset)) {
+            rank_from = rank_to + rank_offset;
+            file_from = file_to + file_offset;
+            if (is_legal_figure_move(KNIGHT_TYPE, rank_from, file_from, rank_to,
+                                     file_to))
+              return true;
+          }
+        }
+      }
+    }
+  } else if (move_length ==
+             (is_capture ? 6 : 5)) { // both file and rank disambiguation
+    file_from = file_to_int(move[1]);
+    rank_from = 8 - (move[2] - '0');
+    return is_legal_figure_move(KNIGHT_TYPE, rank_from, file_from, rank_to,
+                                file_to);
+  }
+
+  return false;
 }
 
 /**

@@ -97,6 +97,10 @@ private:
   int handle_bishop_disambiguation(std::string move, int &rank_from,
                                    int &file_from, int &rank_to, int &file_to,
                                    bool is_capture);
+
+  int handle_knight_disambiguation(std::string move, int &rank_from,
+                                   int &file_from, int &rank_to, int &file_to,
+                                   bool is_capture);
 };
 
 #endif

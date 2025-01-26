@@ -7,7 +7,7 @@
 #include <iostream>
 #include <string>
 
-TEST_CASE("Test main_test_driver", "[unit-test]") {
+TEST_CASE("Test Initialize correct PGN file", "[unit-test]") {
   Chess_Board board = Chess_Board();
   PGN_Reader pgn_reader = PGN_Reader();
 
