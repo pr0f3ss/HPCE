@@ -86,6 +86,13 @@ private:
                                int &rank_to, int &file_to);
 
   int king_into_check(int rank_from, int file_from, int rank_to, int file_to);
+  int is_under_straight_attack(int rank, int file, int delta_rank,
+                               int delta_file);
+  int is_under_diagonal_attack(int rank, int file, int delta_rank,
+                               int delta_file);
+  int is_under_pawn_attack(int rank, int file);
+  int is_under_knight_attack(int rank, int file);
+
   int file_to_int(char file);
   int is_file(char char_notation);
   int figure_moves_into_check(int figure_type, int &rank_from, int &file_from,

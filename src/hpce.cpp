@@ -931,17 +931,6 @@ int Chess_Board::handle_castling(std::string move, int &rank_from,
  */
 int Chess_Board::king_into_check(int rank_from, int file_from, int rank_to,
                                  int file_to) {
-
-  // Essentially, we have to see whether the king is being targeted by a capable
-  // enemy piece on the same rank, file or diagonal. We do this by iterating the
-  // fields in the same rank, file or diagonal and stop when we find either an
-  // enemy piece or a friendly one. Additionally, we check enemy knights at
-  // possible locations
-
-  // First, we update the board after the move and then do the iteration
-  // procedure.
-  int isInCheck = 0;
-
   // Update the board to after-move state
   Figure fig_from = board[rank_from][file_from];
   Figure fig_to = board[rank_to][file_to];
@@ -951,228 +940,123 @@ int Chess_Board::king_into_check(int rank_from, int file_from, int rank_to,
   int king_rank = king_pos[turn][0];
   int king_file = king_pos[turn][1];
 
-  // file traversal, left of king
-  for (int i = king_file - 1; i >= 0; i--) {
-    Figure curr = board[king_rank][i];
-    if (curr.color == turn)
-      break;
-    if (curr.color == !turn &&
-        (curr.type == ROOK_TYPE || curr.type == QUEEN_TYPE)) {
-      isInCheck = 1;
-      goto cleanup;
-    }
-  }
+  // Check for attacks along ranks and files (rooks and queens)
+  bool isInCheck =
+      is_under_straight_attack(king_rank, king_file, 1, 0) ||  // Down
+      is_under_straight_attack(king_rank, king_file, -1, 0) || // Up
+      is_under_straight_attack(king_rank, king_file, 0, 1) ||  // Right
+      is_under_straight_attack(king_rank, king_file, 0, -1);   // Left
 
-  // file traversal, right of king
-  for (int i = king_file + 1; i < 8; i++) {
-    Figure curr = board[king_rank][i];
-    if (curr.color == turn)
-      break;
-    if (curr.color == !turn &&
-        (curr.type == ROOK_TYPE || curr.type == QUEEN_TYPE)) {
-      isInCheck = 1;
-      goto cleanup;
-    }
-  }
+  // Check for attacks along diagonals (bishops and queens)
+  isInCheck =
+      isInCheck ||
+      is_under_diagonal_attack(king_rank, king_file, 1, 1) ||  // Down-right
+      is_under_diagonal_attack(king_rank, king_file, 1, -1) || // Down-left
+      is_under_diagonal_attack(king_rank, king_file, -1, 1) || // Up-right
+      is_under_diagonal_attack(king_rank, king_file, -1, -1);  // Up-left
 
-  // rank traversal, bottom of king
-  for (int i = king_rank + 1; i < 8; i++) {
-    Figure curr = board[i][king_file];
-    if (curr.color == turn)
-      break;
-    if (curr.color == !turn &&
-        (curr.type == ROOK_TYPE || curr.type == QUEEN_TYPE)) {
-      isInCheck = 1;
-      goto cleanup;
-    }
-  }
+  // Check for pawn attacks
+  isInCheck = isInCheck || is_under_pawn_attack(king_rank, king_file);
 
-  // rank traversal, top of king
-  for (int i = king_rank - 1; i >= 0; i--) {
-    Figure curr = board[i][king_file];
-    if (curr.color == turn)
-      break;
-    if (curr.color == !turn &&
-        (curr.type == ROOK_TYPE || curr.type == QUEEN_TYPE)) {
-      isInCheck = 1;
-      goto cleanup;
-    }
-  }
+  // Check for knight attacks
+  isInCheck = isInCheck || is_under_knight_attack(king_rank, king_file);
 
-  // diagonal traversal, bottom-left of king
-  // Special case: check if white pawn attacks black king
-  if (turn == BLACK && king_rank + 1 < 8 && king_file - 1 >= 0) {
-    Figure attackPawn = board[king_rank + 1][king_file - 1];
-    if (attackPawn.type == PAWN_TYPE && attackPawn.color == WHITE) {
-      isInCheck = 1;
-      goto cleanup;
-    }
-  }
-
-  for (int i = king_rank + 1, j = king_file - 1; i < 8 && j >= 0; i++, j--) {
-    Figure curr = board[i][j];
-    if (curr.color == turn)
-      break;
-    if (curr.color == !turn &&
-        (curr.type == BISHOP_TYPE || curr.type == QUEEN_TYPE)) {
-      isInCheck = 1;
-      goto cleanup;
-    }
-  }
-
-  // diagonal traversal, bottom-right of king
-  // Special case: check if white pawn attacks black king
-  if (turn == BLACK && king_rank + 1 < 8 && king_file + 1 < 8) {
-    Figure attackPawn = board[king_rank + 1][king_file + 1];
-    if (attackPawn.type == PAWN_TYPE && attackPawn.color == WHITE) {
-      isInCheck = 1;
-      goto cleanup;
-    }
-  }
-
-  for (int i = king_rank + 1, j = king_file + 1; i < 8 && j < 8; i++, j++) {
-    Figure curr = board[i][j];
-    if (curr.color == turn)
-      break;
-    if (curr.color == !turn &&
-        (curr.type == BISHOP_TYPE || curr.type == QUEEN_TYPE)) {
-      isInCheck = 1;
-      goto cleanup;
-    }
-  }
-
-  // diagonal traversal, top-left of king
-  // Special case: check if black pawn attacks white king
-  if (turn == WHITE && king_rank - 1 >= 0 && king_file - 1 >= 0) {
-    Figure attackPawn = board[king_rank - 1][king_file - 1];
-    if (attackPawn.type == PAWN_TYPE && attackPawn.color == BLACK) {
-      isInCheck = 1;
-      goto cleanup;
-    }
-  }
-
-  for (int i = king_rank - 1, j = king_file - 1; i >= 0 && j >= 0; i--, j--) {
-    Figure curr = board[i][j];
-    if (curr.color == turn)
-      break;
-    if (curr.color == !turn &&
-        (curr.type == BISHOP_TYPE || curr.type == QUEEN_TYPE)) {
-      isInCheck = 1;
-      goto cleanup;
-    }
-  }
-
-  // diagonal traversal, top-right of king
-  // Special case: check if black pawn attacks white king
-  if (turn == WHITE && king_rank - 1 >= 0 && king_file + 1 < 8) {
-    Figure attackPawn = board[king_rank - 1][king_file + 1];
-    if (attackPawn.type == PAWN_TYPE && attackPawn.color == BLACK) {
-      isInCheck = 1;
-      goto cleanup;
-    }
-  }
-
-  for (int i = king_rank - 1, j = king_file + 1; i >= 0 && j < 8; i--, j++) {
-    Figure curr = board[i][j];
-    if (curr.color == turn)
-      break;
-    if (curr.color == !turn &&
-        (curr.type == BISHOP_TYPE || curr.type == QUEEN_TYPE)) {
-      isInCheck = 1;
-      goto cleanup;
-    }
-  }
-
-  // Check enemy knight locations
-
-  // bottom cases
-  int r, f;
-  r = king_rank + 2;
-  f = king_file;
-
-  if (r < 8) {
-    if (f + 1 < 8) {
-      Figure curr = board[r][f + 1];
-      if (curr.color == !turn && curr.type == KNIGHT_TYPE) {
-        isInCheck = 1;
-        goto cleanup;
-      }
-    }
-    if (f - 1 >= 0) {
-      Figure curr = board[r][f - 1];
-      if (curr.color == !turn && curr.type == KNIGHT_TYPE) {
-        isInCheck = 1;
-        goto cleanup;
-      }
-    }
-  }
-
-  // top cases
-  r = king_rank - 2;
-  f = king_file;
-  if (r >= 0) {
-    if (f + 1 < 8) {
-      Figure curr = board[r][f + 1];
-      if (curr.color == !turn && curr.type == KNIGHT_TYPE) {
-        isInCheck = 1;
-        goto cleanup;
-      }
-    }
-    if (f - 1 >= 0) {
-      Figure curr = board[r][f - 1];
-      if (curr.color == !turn && curr.type == KNIGHT_TYPE) {
-        isInCheck = 1;
-        goto cleanup;
-      }
-    }
-  }
-
-  // left cases
-  r = king_rank;
-  f = king_file - 2;
-  if (f >= 0) {
-    if (r + 1 < 8) {
-      Figure curr = board[r + 1][f];
-      if (curr.color == !turn && curr.type == KNIGHT_TYPE) {
-        isInCheck = 1;
-        goto cleanup;
-      }
-    }
-    if (r - 1 >= 0) {
-      Figure curr = board[r - 1][f];
-      if (curr.color == !turn && curr.type == KNIGHT_TYPE) {
-        isInCheck = 1;
-        goto cleanup;
-      }
-    }
-  }
-
-  // right cases
-  r = king_rank;
-  f = king_file + 2;
-  if (f < 8) {
-    if (r + 1 < 8) {
-      Figure curr = board[r + 1][f];
-      if (curr.color == !turn && curr.type == KNIGHT_TYPE) {
-        isInCheck = 1;
-        goto cleanup;
-      }
-    }
-    if (r - 1 >= 0) {
-      Figure curr = board[r - 1][f];
-      if (curr.color == !turn && curr.type == KNIGHT_TYPE) {
-        isInCheck = 1;
-        goto cleanup;
-      }
-    }
-  }
-
-// Clean up board to before-move state
-cleanup:
+  // Clean up board to before-move state
   board[rank_to][file_to] = fig_to;
   board[rank_from][file_from] = fig_from;
 
-  return isInCheck;
+  return isInCheck ? 1 : 0;
+}
+
+/**
+ * Checks if a square is under attack by a rook or queen along a straight line.
+ */
+int Chess_Board::is_under_straight_attack(int rank, int file, int delta_rank,
+                                          int delta_file) {
+  int r = rank + delta_rank;
+  int f = file + delta_file;
+
+  while (r >= 0 && r < 8 && f >= 0 && f < 8) {
+    Figure curr = board[r][f];
+    if (curr.color == turn)
+      break; // Friendly piece blocks
+    if (curr.color == !turn) {
+      return (curr.type == ROOK_TYPE || curr.type == QUEEN_TYPE);
+    }
+    r += delta_rank;
+    f += delta_file;
+  }
+  return false;
+}
+
+/**
+ * Checks if a square is under attack by a bishop or queen along a diagonal.
+ */
+int Chess_Board::is_under_diagonal_attack(int rank, int file, int delta_rank,
+                                          int delta_file) {
+  int r = rank + delta_rank;
+  int f = file + delta_file;
+
+  while (r >= 0 && r < 8 && f >= 0 && f < 8) {
+    Figure curr = board[r][f];
+    if (curr.color == turn)
+      break; // Friendly piece blocks
+    if (curr.color == !turn) {
+      return (curr.type == BISHOP_TYPE || curr.type == QUEEN_TYPE);
+    }
+    r += delta_rank;
+    f += delta_file;
+  }
+  return false;
+}
+
+/**
+ * Checks if a square is under attack by a pawn.
+ */
+int Chess_Board::is_under_pawn_attack(int rank, int file) {
+  if (turn == WHITE) {
+    if (rank - 1 >= 0 && file - 1 >= 0) {
+      Figure curr = board[rank - 1][file - 1];
+      if (curr.color == BLACK && curr.type == PAWN_TYPE)
+        return true;
+    }
+    if (rank - 1 >= 0 && file + 1 < 8) {
+      Figure curr = board[rank - 1][file + 1];
+      if (curr.color == BLACK && curr.type == PAWN_TYPE)
+        return true;
+    }
+  } else {
+    if (rank + 1 < 8 && file - 1 >= 0) {
+      Figure curr = board[rank + 1][file - 1];
+      if (curr.color == WHITE && curr.type == PAWN_TYPE)
+        return true;
+    }
+    if (rank + 1 < 8 && file + 1 < 8) {
+      Figure curr = board[rank + 1][file + 1];
+      if (curr.color == WHITE && curr.type == PAWN_TYPE)
+        return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Checks if a square is under attack by a knight.
+ */
+int Chess_Board::is_under_knight_attack(int rank, int file) {
+  const int knight_moves[8][2] = {{2, 1}, {2, -1}, {-2, 1}, {-2, -1},
+                                  {1, 2}, {1, -2}, {-1, 2}, {-1, -2}};
+
+  for (const auto &move : knight_moves) {
+    int r = rank + move[0];
+    int f = file + move[1];
+    if (r >= 0 && r < 8 && f >= 0 && f < 8) {
+      Figure curr = board[r][f];
+      if (curr.color == !turn && curr.type == KNIGHT_TYPE)
+        return true;
+    }
+  }
+  return false;
 }
 
 /**
