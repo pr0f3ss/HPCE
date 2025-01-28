@@ -866,59 +866,47 @@ int Chess_Board::handle_king(std::string move, int &rank_from, int &file_from,
  */
 int Chess_Board::handle_castling(std::string move, int &rank_from,
                                  int &file_from, int &rank_to, int &file_to) {
-  if (move == "O-O") { // king side castle
-    if (turn == WHITE) {
-      rank_from = 7;
-      file_from = 4;
-      rank_to = 7;
-      file_to = 6;
-      Figure l = board[7][5];
-      Figure r = board[7][6];
-      if (!l.empty || !r.empty)
-        return 0;
-    } else {
-      rank_from = 0;
-      file_from = 4;
-      rank_to = 0;
-      file_to = 6;
-      Figure l = board[0][5];
-      Figure r = board[0][6];
-      if (!l.empty || !r.empty)
-        return 0;
+  const int KING_SIDE_FILE = 6;
+  const int QUEEN_SIDE_FILE = 2;
+
+  file_from = 4;
+  rank_from = (turn == WHITE) ? 7 : 0;
+  rank_to = rank_from;
+
+  // Helper lambda to check if path is clear
+  auto isPathClear = [&](std::initializer_list<int> files) -> bool {
+    for (int file : files) {
+      if (!board[rank_to][file].empty) {
+        return false;
+      }
     }
-    // we have to check all squares that the king would move to are not in check
+    return true;
+  };
+
+  if (move == "O-O") { // king side castle
+    file_to = KING_SIDE_FILE;
+    if (!isPathClear({5, 6}))
+      return 0;
+
+    // Special case: Check if the king traversed a file that would have put him
+    // in check
     return !king_moved[turn] && !rook_moved[turn][1] &&
            !king_into_check(rank_from, file_from, rank_to, file_to) &&
            !king_into_check(rank_from, file_from, rank_to, file_to - 1);
+
   } else if (move == "O-O-O") { // queen side castle
-    if (turn == WHITE) {
-      rank_from = 7;
-      file_from = 4;
-      rank_to = 7;
-      file_to = 2;
-      Figure l = board[7][1];
-      Figure m = board[7][2];
-      Figure r = board[7][3];
-      if (!l.empty || !m.empty || !r.empty)
-        return 0;
-    } else {
-      rank_from = 0;
-      file_from = 4;
-      rank_to = 0;
-      file_to = 2;
-      Figure l = board[0][1];
-      Figure m = board[0][2];
-      Figure r = board[0][3];
-      if (!l.empty || !m.empty || !r.empty)
-        return 0;
-    }
-    // we have to check all squares that the king would move to are not in check
+    file_to = QUEEN_SIDE_FILE;
+    if (!isPathClear({1, 2, 3}))
+      return 0;
+
+    // Special case: Check if the king traversed a file that would have put him
+    // in check
     return !king_moved[turn] && !rook_moved[turn][0] &&
            !king_into_check(rank_from, file_from, rank_to, file_to) &&
            !king_into_check(rank_from, file_from, rank_to, file_to + 1);
   }
 
-  return 0;
+  return 0; // invalid move format
 }
 
 /**
@@ -969,7 +957,8 @@ int Chess_Board::king_into_check(int rank_from, int file_from, int rank_to,
 }
 
 /**
- * Checks if a square is under attack by a rook or queen along a straight line.
+ * Checks if a square is under attack by a rook or queen along a straight
+ * line.
  */
 int Chess_Board::is_under_straight_attack(int rank, int file, int delta_rank,
                                           int delta_file) {
@@ -1073,9 +1062,9 @@ int Chess_Board::file_to_int(char file) { return file - 'a'; }
 int Chess_Board::is_file(char char_notation) { return isdigit(char_notation); }
 
 /**
- * Returns 1 if figure moves own king into check (1 = check, 0 = no check, -1 =
- * figure not found, -2 = other figure is blocking path).
- * Returns non-negative integer if and only if bishop figure has been found
+ * Returns 1 if figure moves own king into check (1 = check, 0 = no check, -1
+ * = figure not found, -2 = other figure is blocking path). Returns
+ * non-negative integer if and only if bishop figure has been found
  * @param input  int type of figure
  * @param output int
  * @param output rank of figure before move
