@@ -59,10 +59,17 @@ public:
   int get_score();
 
 private:
+  int en_passant_target[2]; // Stores the rank and file of the en passant target
+                            // square
+
   void init_board();
   int is_legal_game(PGN_Chess_Game chess_game);
   int is_legal_move(std::string move, int &rank_from, int &file_from,
                     int &rank_to, int &file_to);
+
+  void update_move_flags(char piece, int file_from);
+  void update_board(int rank_from, int file_from, int rank_to, int file_to);
+  void handle_castling_update(std::string move);
 
   int is_legal_figure_move(int figure_type, int &rank_from, int &file_from,
                            int &rank_to, int &file_to);
@@ -81,6 +88,10 @@ private:
                   int &rank_to, int &file_to);
   int handle_castling(std::string move, int &rank_from, int &file_from,
                       int &rank_to, int &file_to);
+
+  void update_en_passant_target(int rank, int file);
+  void reset_en_passant_target();
+  int is_en_passant_target(int rank, int file);
 
   int retrieve_knight_location(std::string move, int &rank_from, int &file_from,
                                int &rank_to, int &file_to);

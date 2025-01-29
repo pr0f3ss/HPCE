@@ -11,6 +11,9 @@
 Chess_Board::Chess_Board() {
   turn = 0;
 
+  en_passant_target[0] = -1; // Initialize to invalid value
+  en_passant_target[1] = -1;
+
   init_board();
   play_move("e4");
   play_move("e5");
@@ -49,54 +52,74 @@ Chess_Board::~Chess_Board() {}
 int Chess_Board::play_move(std::string move) {
   int rank_from = 0, file_from = 0, rank_to = 0, file_to = 0;
 
-  int isLegal = is_legal_move(move, rank_from, file_from, rank_to, file_to);
-  if (isLegal) {
-    // board from-position is updated to be empty and to-position gets updated
-    board[rank_to][file_to] = board[rank_from][file_from];
-    board[rank_from][file_from] = empty;
-
-    // Special case: Castling;
-    // King position gets updated already, we just have to move the rook
-    // accordingly
-    if (move == "O-O") {
-      king_moved[turn] = 1;
-      rook_moved[turn][1] = 1;
-      if (turn == WHITE) {
-        board[7][7] = empty;
-        board[7][5] = w_rook;
-      } else {
-        board[0][7] = empty;
-        board[0][5] = w_rook;
-      }
-    } else if (move == "O-O-O") {
-      king_moved[turn] = 1;
-      rook_moved[turn][0] = 1;
-      if (turn == WHITE) {
-        board[7][0] = empty;
-        board[7][3] = w_rook;
-      } else {
-        board[0][0] = empty;
-        board[0][3] = w_rook;
-      }
-    }
-
-    // update king/rook move variable
-    if (move[0] == 'K') {
-      king_moved[turn] = 1;
-    }
-
-    if (move[0] == 'R') {
-      if (file_from == 0) {
-        rook_moved[turn][0];
-      } else {
-        rook_moved[turn][1];
-      }
-    }
-
-    turn = !turn;
-    return 1;
+  if (!is_legal_move(move, rank_from, file_from, rank_to, file_to)) {
+    return 0; // Move is not legal
   }
-  return 0;
+
+  // Update the board
+  update_board(rank_from, file_from, rank_to, file_to);
+
+  // Handle en passant target update
+  if (move.length() == 2 &&
+      (rank_to == 3 || rank_to == 4)) { // Pawn moves two squares
+    int en_passant_rank = turn == WHITE ? rank_to + 1 : rank_to - 1;
+    update_en_passant_target(en_passant_rank, file_to);
+  } else {
+    reset_en_passant_target(); // Reset en passant target after the next move
+  }
+
+  // Handle castling updates
+  if (move == "O-O" || move == "O-O-O") {
+    handle_castling_update(move);
+  }
+
+  // Update king/rook move flags
+  update_move_flags(move[0], file_from);
+
+  // Switch turns
+  turn = !turn;
+
+  return 1; // Move is legal
+}
+
+/**
+ * Updates king/rook move flags.
+ */
+void Chess_Board::update_move_flags(char piece, int file_from) {
+  if (piece == 'K') {
+    king_moved[turn] = 1;
+  } else if (piece == 'R') {
+    rook_moved[turn][(file_from == 0) ? 0 : 1] = 1;
+  }
+}
+
+/**
+ * Updates the board after a move is played.
+ * TODO: Implement en passant logic
+ */
+void Chess_Board::update_board(int rank_from, int file_from, int rank_to,
+                               int file_to) {
+  board[rank_to][file_to] = board[rank_from][file_from];
+  board[rank_from][file_from] = empty;
+}
+
+/**
+ * Handles castling move updates.
+ */
+void Chess_Board::handle_castling_update(std::string move) {
+  if (move == "O-O") { // King-side castling
+    king_moved[turn] = 1;
+    rook_moved[turn][1] = 1;
+    int rank = (turn == WHITE) ? 7 : 0;
+    board[rank][7] = empty;
+    board[rank][5] = (turn == WHITE) ? w_rook : b_rook;
+  } else if (move == "O-O-O") { // Queen-side castling
+    king_moved[turn] = 1;
+    rook_moved[turn][0] = 1;
+    int rank = (turn == WHITE) ? 7 : 0;
+    board[rank][0] = empty;
+    board[rank][3] = (turn == WHITE) ? w_rook : b_rook;
+  }
 }
 
 /**
@@ -261,55 +284,82 @@ int Chess_Board::is_legal_figure_move(int figure_type, int &rank_from,
  */
 int Chess_Board::handle_pawn(std::string move, int &rank_from, int &file_from,
                              int &rank_to, int &file_to) {
-  if (move.find('x') != std::string::npos) { // capture case
-    // todo: implement
-    return 1;
-  } else { // pawn moves normally
-    int file = file_to_int(move[0]);
-    int rank = 8 - (move[1] - '0');
+  bool is_capture = move.find('x') != std::string::npos;
 
-    // Special case: Check if moving forward two squares
-    if (rank == 4 && turn == 0) { // for white
-      if (board[4][file].empty == 1 && board[5][file].empty == 1) {
-        Figure pos = board[6][file];
-        rank_from = 6;
-        file_from = file;
-        rank_to = rank;
-        file_to = file;
-        return pos.type == 0 && pos.color == 0 &&
-               !king_into_check(rank_from, file_from, rank_to, file_to);
+  if (is_capture) { // Capture case
+    file_to = file_to_int(move[2]);
+    rank_to = 8 - (move[3] - '0');
+
+    // Handle en passant
+    if (is_en_passant_target(rank_to, file_to)) {
+      rank_from = turn == WHITE ? rank_to + 1 : rank_to - 1;
+      file_from = file_to_int(move[0]);
+      return !king_into_check(rank_from, file_from, rank_to, file_to);
+    }
+
+    // Handle regular capture
+    rank_from = turn == WHITE ? rank_to + 1 : rank_to - 1;
+    file_from = file_to_int(move[0]);
+    Figure target = board[rank_to][file_to];
+    return target.color == !turn && target.type != 0 &&
+           !king_into_check(rank_from, file_from, rank_to, file_to);
+  } else { // Non-capture case
+    file_to = file_to_int(move[0]);
+    rank_to = 8 - (move[1] - '0');
+
+    // Handle double-square move (only on starting rank)
+    if ((turn == WHITE && rank_to == 4) || (turn == BLACK && rank_to == 3)) {
+      int start_rank = turn == WHITE ? 6 : 1;
+      int mid_rank = turn == WHITE ? 5 : 2;
+      if (board[start_rank][file_to].empty && board[mid_rank][file_to].empty) {
+        rank_from = start_rank;
+        file_from = file_to;
+        return !king_into_check(rank_from, file_from, rank_to, file_to);
       }
-    } else if (rank == 3 && turn == 1) { // for black
-      if (board[3][file].empty == 1 && board[2][file].empty == 1) {
-        Figure pos = board[1][file];
-        rank_from = 1;
-        file_from = file;
-        rank_to = rank;
-        file_to = file;
-        return pos.type == 0 && pos.color == 1 &&
-               !king_into_check(rank_from, file_from, rank_to, file_to);
+    }
+
+    // Handle single-square move
+    int direction = turn == WHITE ? -1 : 1;
+    rank_from = rank_to + direction;
+    file_from = file_to;
+
+    if (board[rank_to][file_to].empty) {
+      // Handle promotion
+      if (rank_to == 0 || rank_to == 7) {
+        char promotion_piece =
+            move.length() > 2 ? move[2] : 'Q'; // Default to queen
+        // TODO: Implement promotion logic here (e.g., update board with
+        // promoted piece)
+        return !king_into_check(rank_from, file_from, rank_to, file_to);
       }
+      return !king_into_check(rank_from, file_from, rank_to, file_to);
     }
 
-    // Pawn moves forward one square
-    // Special case: Promotion
-    if (rank == 0 || rank == 7) {
-      char promotion_piece = move[2];
-      // todo: implement
-    }
-    if (board[rank][file].empty == 1) {
-      int direction = turn ? -1 : 1;
-      rank_from = rank + direction;
-      file_from = file;
-      rank_to = rank;
-      file_to = file;
-      Figure pos = board[rank_from][file_from];
-      return pos.type == 0 &&
-             !king_into_check(rank_from, file_from, rank_to, file_to);
-    }
-
-    return 0;
+    return 0; // Illegal move
   }
+}
+
+/**
+ * Updates the en passant target square after a pawn moves two squares forward.
+ */
+void Chess_Board::update_en_passant_target(int rank, int file) {
+  en_passant_target[0] = rank;
+  en_passant_target[1] = file;
+}
+
+/**
+ * Resets the en passant target square (e.g., after the next move).
+ */
+void Chess_Board::reset_en_passant_target() {
+  en_passant_target[0] = -1;
+  en_passant_target[1] = -1;
+}
+
+/**
+ * Returns whether the given square is the en passant target.
+ */
+int Chess_Board::is_en_passant_target(int rank, int file) {
+  return en_passant_target[0] == rank && en_passant_target[1] == file;
 }
 
 /**
