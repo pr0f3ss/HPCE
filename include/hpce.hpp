@@ -106,9 +106,11 @@ private:
 
   int file_to_int(char file);
   int is_file(char char_notation);
-  int figure_moves_into_check(int figure_type, int &rank_from, int &file_from,
-                              int &rank_to, int &file_to);
+  int figure_move_is_legal(int figure_type, int &rank_from, int &file_from,
+                           int &rank_to, int &file_to);
 
+  int check_straight_line(int figure_type, int &rank_from, int &file_from,
+                          int rank_to, int file_to);
   int check_diagonals(int figure_type, int &rank_from, int &file_from,
                       int &rank_to, int &file_to);
 
