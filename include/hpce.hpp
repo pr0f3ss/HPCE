@@ -114,6 +114,14 @@ private:
   int check_diagonals(int figure_type, int &rank_from, int &file_from,
                       int &rank_to, int &file_to);
 
+  int find_queen_on_file(int file_from, int &rank_from, int rank_to,
+                         int file_to);
+  int find_queen_on_rank(int rank_from, int &file_from, int rank_to,
+                         int file_to);
+  int find_queen(int &rank_from, int &file_from, int rank_to, int file_to);
+  int check_queen_path(int &rank_from, int &file_from, int rank_to,
+                       int file_to);
+
   int handle_bishop_disambiguation(std::string move, int &rank_from,
                                    int &file_from, int &rank_to, int &file_to,
                                    bool is_capture);

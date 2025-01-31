@@ -31,10 +31,10 @@ Chess_Board::Chess_Board() {
   play_move("Bd7");
 
   play_move("a4");
-  // play_move("Qe7");
+  play_move("Qe7");
 
-  // play_move("a5");
-  // play_move("O-O-O");
+  play_move("a5");
+  play_move("O-O-O");
 
   print_board();
 }
@@ -740,123 +740,158 @@ int Chess_Board::handle_rook(std::string move, int &rank_from, int &file_from,
  */
 int Chess_Board::handle_queen(std::string move, int &rank_from, int &file_from,
                               int &rank_to, int &file_to) {
-  if (move.find('x') != std::string::npos) { // capture case
-    // todo: implement
-    return 1;
-  } else {                    // no capture case
-    if (move.length() == 3) { // unambiguous move
-      int file = file_to_int(move[1]);
-      int rank = 8 - (move[2] - '0');
+  bool is_capture = move.find('x') != std::string::npos;
 
-      rank_to = rank;
-      file_to = file;
+  if (is_capture) { // Capture case
+    file_to = file_to_int(move[2]);
+    rank_to = 8 - (move[3] - '0');
+  } else { // Non-capture case
+    file_to = file_to_int(move[1]);
+    rank_to = 8 - (move[2] - '0');
+  }
 
-      // copied mostly from handle_rook() and handle_bishop() (as their moves
-      // are identical)
+  // Handle unambiguous moves (e.g., "Qae1" or "Q1e1")
+  if (move.length() == 4) {
+    if (is_file(move[1])) { // File disambiguation (e.g., "Qae1")
+      file_from = file_to_int(move[1]);
+      return find_queen_on_file(file_from, rank_from, rank_to, file_to);
+    } else if (isdigit(move[1])) { // Rank disambiguation (e.g., "Q1e1")
+      rank_from = 8 - (move[1] - '0');
+      return find_queen_on_rank(rank_from, file_from, rank_to, file_to);
+    }
+  } else if (move.length() ==
+             5) { // Both file and rank disambiguation (e.g., "Qa1e1")
+    file_from = file_to_int(move[1]);
+    rank_from = 8 - (move[2] - '0');
+    return check_queen_path(rank_from, file_from, rank_to, file_to);
+  }
 
-      // file traversal, left of destination square
-      for (int i = file_to - 1; i >= 0; i--) {
-        Figure curr = board[rank_to][i];
+  // Handle unambiguous moves (e.g., "Qe1")
+  if (move.length() == 3) {
+    return find_queen(rank_from, file_from, rank_to, file_to);
+  }
+
+  return 0; // Illegal move
+}
+
+/**
+ * Searches for the queen on the specified file that can legally move to
+ * (rank_to, file_to).
+ */
+int Chess_Board::find_queen_on_file(int file_from, int &rank_from, int rank_to,
+                                    int file_to) {
+  // Check both directions along the file (up and down)
+  for (int dir : {1, -1}) {
+    int r = rank_to + dir;
+    while (r >= 0 && r < 8) {
+      Figure curr = board[r][file_from];
+      if (curr.type != 0) {
         if (curr.color == turn && curr.type == QUEEN_TYPE) {
-          rank_from = rank_to;
-          file_from = i;
-          return !king_into_check(rank_from, file_from, rank_to, file_to);
+          rank_from = r;
+          return check_queen_path(rank_from, file_from, rank_to, file_to);
         }
-        if (curr.color == !turn)
-          break;
+        break; // Path is blocked
       }
-
-      // file traversal, right of destination square
-      for (int i = file_to + 1; i < 8; i++) {
-        Figure curr = board[rank_to][i];
-        if (curr.color == turn && curr.type == QUEEN_TYPE) {
-          rank_from = rank_to;
-          file_from = i;
-          return !king_into_check(rank_from, file_from, rank_to, file_to);
-        }
-        if (curr.color == !turn)
-          break;
-      }
-
-      // rank traversal, bottom of destination square
-      for (int i = rank_to + 1; i < 8; i++) {
-        Figure curr = board[i][rank_to];
-        if (curr.color == turn && curr.type == QUEEN_TYPE) {
-          rank_from = i;
-          file_from = file_to;
-          return !king_into_check(rank_from, file_from, rank_to, file_to);
-        }
-        if (curr.color == !turn)
-          break;
-      }
-
-      // rank traversal, top of destination square
-      for (int i = rank_to - 1; i >= 0; i--) {
-        Figure curr = board[i][rank_to];
-        if (curr.color == turn && curr.type == QUEEN_TYPE) {
-          rank_from = i;
-          file_from = file_to;
-          return !king_into_check(rank_from, file_from, rank_to, file_to);
-        }
-        if (curr.color == !turn)
-          break;
-      }
-
-      // diagonal traversal, bottom-left
-      for (int i = rank_to + 1, j = file_to - 1; i < 8 && j >= 0; i++, j--) {
-        Figure curr = board[i][j];
-        if (curr.color == turn && curr.type == QUEEN_TYPE) {
-          rank_from = i;
-          file_from = j;
-          return !king_into_check(rank_from, file_from, rank_to, file_to);
-        }
-        if (curr.color == !turn)
-          break;
-      }
-
-      // diagonal traversal, bottom-right
-
-      for (int i = rank_to + 1, j = file_to + 1; i < 8 && j < 8; i++, j++) {
-        Figure curr = board[i][j];
-        if (curr.color == turn && curr.type == QUEEN_TYPE) {
-          rank_from = i;
-          file_from = j;
-          return !king_into_check(rank_from, file_from, rank_to, file_to);
-        }
-        if (curr.color == !turn)
-          break;
-      }
-
-      // diagonal traversal, top-left
-
-      for (int i = rank_to - 1, j = file_to - 1; i >= 0 && j >= 0; i--, j--) {
-        Figure curr = board[i][j];
-        if (curr.color == turn && curr.type == QUEEN_TYPE) {
-          rank_from = i;
-          file_from = j;
-          return !king_into_check(rank_from, file_from, rank_to, file_to);
-        }
-        if (curr.color == !turn)
-          break;
-      }
-
-      // diagonal traversal, top-right
-      for (int i = rank_to - 1, j = file_to + 1; i >= 0 && j < 8; i--, j++) {
-        Figure curr = board[i][j];
-        if (curr.color == turn && curr.type == QUEEN_TYPE) {
-          rank_from = i;
-          file_from = j;
-          return !king_into_check(rank_from, file_from, rank_to, file_to);
-        }
-        if (curr.color == !turn)
-          break;
-      }
-      return 0;
-    } else { // ambiguous move
-      // todo: implement
-      return 1;
+      r += dir;
     }
   }
+  return 0; // No queen found on the specified file
+}
+
+/**
+ * Searches for the queen on the specified rank that can legally move to
+ * (rank_to, file_to).
+ */
+int Chess_Board::find_queen_on_rank(int rank_from, int &file_from, int rank_to,
+                                    int file_to) {
+  // Check both directions along the rank (left and right)
+  for (int dir : {1, -1}) {
+    int f = file_to + dir;
+    while (f >= 0 && f < 8) {
+      Figure curr = board[rank_from][f];
+      if (curr.type != 0) {
+        if (curr.color == turn && curr.type == QUEEN_TYPE) {
+          file_from = f;
+          return check_queen_path(rank_from, file_from, rank_to, file_to);
+        }
+        break; // Path is blocked
+      }
+      f += dir;
+    }
+  }
+  return 0; // No queen found on the specified rank
+}
+
+/**
+ * Searches for the queen that can legally move to (rank_to, file_to).
+ */
+int Chess_Board::find_queen(int &rank_from, int &file_from, int rank_to,
+                            int file_to) {
+  // Check all 8 possible directions from the target square
+  const int directions[8][2] = {
+      {1, 0}, {-1, 0}, {0, 1},  {0, -1}, // Straight directions
+      {1, 1}, {1, -1}, {-1, 1}, {-1, -1} // Diagonal directions
+  };
+
+  for (const auto &dir : directions) {
+    int r = rank_to + dir[0];
+    int f = file_to + dir[1];
+
+    while (r >= 0 && r < 8 && f >= 0 && f < 8) {
+      Figure curr = board[r][f];
+      if (curr.type != 0) {
+        if (curr.color == turn && curr.type == QUEEN_TYPE) {
+          rank_from = r;
+          file_from = f;
+          return check_queen_path(rank_from, file_from, rank_to, file_to);
+        }
+        break; // Path is blocked
+      }
+      r += dir[0];
+      f += dir[1];
+    }
+  }
+
+  return 0; // No queen found
+}
+
+/**
+ * Checks if a queen can move from (rank_from, file_from) to (rank_to, file_to)
+ * without putting the king in check.
+ */
+int Chess_Board::check_queen_path(int &rank_from, int &file_from, int rank_to,
+                                  int file_to) {
+  // Check if the move is along a straight line or diagonal
+  int rank_diff = abs(rank_to - rank_from);
+  int file_diff = abs(file_to - file_from);
+  if (rank_diff != file_diff && rank_from != rank_to && file_from != file_to) {
+    return 0; // Not a straight line or diagonal
+  }
+
+  // Determine the direction of movement
+  int rank_dir = (rank_to > rank_from) ? 1 : (rank_to < rank_from) ? -1 : 0;
+  int file_dir = (file_to > file_from) ? 1 : (file_to < file_from) ? -1 : 0;
+
+  // Traverse the path to ensure it's clear
+  int r = rank_from + rank_dir;
+  int f = file_from + file_dir;
+  while (r != rank_to || f != file_to) {
+    Figure curr = board[r][f];
+    if (curr.type != 0) {
+      return 0; // Path is blocked
+    }
+    r += rank_dir;
+    f += file_dir;
+  }
+
+  // Check the target square
+  Figure target = board[rank_to][file_to];
+  if (target.color == turn && target.type != 0) {
+    return 0; // Cannot capture own piece
+  }
+
+  // Ensure the move doesn't put the king in check
+  return !king_into_check(rank_from, file_from, rank_to, file_to);
 }
 
 /**
