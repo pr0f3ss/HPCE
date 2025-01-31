@@ -105,11 +105,35 @@ void Chess_Board::update_board(int rank_from, int file_from, int rank_to,
     board[captured_rank][file_to] = empty;
   }
 
-  std::cout << rank_from << " " << file_from << "\n";
-  std::cout << rank_to << " " << file_to << "\n";
+  // std::cout << rank_from << " " << file_from << "\n";
+  // std::cout << rank_to << " " << file_to << "\n";
 
   board[rank_to][file_to] = board[rank_from][file_from];
   board[rank_from][file_from] = empty;
+}
+
+/**
+ * Promotes the pawn piece to specified type.
+ */
+void Chess_Board::promote_piece(char figure_char, int rank_from, int file_from,
+                                int rank_to, int file_to) {
+  int figure_type;
+
+  switch (figure_char) {
+  case 'N':
+    figure_type = KNIGHT_TYPE;
+  case 'B':
+    figure_type = BISHOP_TYPE;
+  case 'R':
+    figure_type = ROOK_TYPE;
+  case 'Q':
+    figure_type = QUEEN_TYPE;
+  default:
+    figure_type = EMPTY_TYPE;
+  }
+
+  Figure curr = board[rank_from][file_from];
+  curr.type = figure_type;
 }
 
 /**
@@ -336,9 +360,8 @@ int Chess_Board::handle_pawn(std::string move, int &rank_from, int &file_from,
       // Handle promotion
       if (rank_to == 0 || rank_to == 7) {
         char promotion_piece =
-            move.length() > 2 ? move[2] : 'Q'; // Default to queen
-        // TODO: Implement promotion logic here (e.g., update board with
-        // promoted piece)
+            move.length() > 2 ? move[3] : 'Q'; // Default to queen
+        promote_piece(promotion_piece, rank_from, file_from, rank_to, file_to);
         return !king_into_check(rank_from, file_from, rank_to, file_to);
       }
       return !king_into_check(rank_from, file_from, rank_to, file_to);

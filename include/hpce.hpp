@@ -69,6 +69,8 @@ private:
 
   void update_move_flags(char piece, int file_from);
   void update_board(int rank_from, int file_from, int rank_to, int file_to);
+  void promote_piece(char figure_char, int rank_from, int file_from,
+                     int rank_to, int file_to);
   void handle_castling_update(std::string move);
 
   int is_legal_figure_move(int figure_type, int &rank_from, int &file_from,
