@@ -1,5 +1,6 @@
 #include "../include/pgn_reader.hpp"
 #include "../include/hpce.hpp"
+#include <pybind11/pybind11.h>
 
 #include <algorithm>
 #include <cctype>
@@ -12,6 +13,8 @@
 #include <string.h>
 #include <string>
 #include <vector>
+
+namespace py = pybind11;
 
 // Helps trim the getline strings from pgn files.
 void trimString(std::string &str) {
@@ -204,4 +207,13 @@ int PGN_Reader::validate_tag_pair_map(
   }
 
   return 1;
+}
+
+// PyBind11 module definition
+PYBIND11_MODULE(hpce, m) {
+  m.doc() = "Python bindings for HPCE";
+
+  // Expose the return_games function
+  m.def("return_games", &return_games,
+        "Process a PGN file and return all games");
 }
