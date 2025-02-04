@@ -1,6 +1,7 @@
 #include "../include/pgn_reader.hpp"
 #include "../include/hpce.hpp"
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h> // For automatic conversion of std::vector
 
 #include <algorithm>
 #include <cctype>
@@ -213,7 +214,11 @@ int PGN_Reader::validate_tag_pair_map(
 PYBIND11_MODULE(hpce, m) {
   m.doc() = "Python bindings for HPCE";
 
+  // Expose the PGN_Chess_Game struct
+  py::class_<PGN_Chess_Game>(m, "PGN_Chess_Game").def(py::init<>());
+
   // Expose the return_games function
-  m.def("return_games", &return_games,
-        "Process a PGN file and return all games");
+  py::class_<PGN_Reader>(m, "PGN_Reader")
+      .def(py::init<>())
+      .def("return_games", &PGN_Reader::return_games);
 }
