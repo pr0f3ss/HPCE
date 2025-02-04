@@ -9,3 +9,4 @@ build/
 bin/
 lib/
 training_data/
+.venv/
