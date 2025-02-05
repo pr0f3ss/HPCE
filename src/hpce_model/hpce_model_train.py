@@ -1,5 +1,7 @@
 import torch.optim as optim
 import torch.nn as nn
+from hpce_data_loader import ChessDataset
+from torch.utils.data import DataLoader
 from hpce_model import ChessTransformer
 
 # Initialize model, optimizer, and loss functions
@@ -8,11 +10,14 @@ optimizer = optim.Adam(model.parameters(), lr=1e-4)
 move_loss_fn = nn.CrossEntropyLoss()
 eval_loss_fn = nn.MSELoss()
 
+pgn_file = "../../data/pass_test_case.pgn"
+dataset = ChessDataset(pgn_file)
+dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
+
 n_epochs = 10
 
-# Example training loop
 for epoch in range(n_epochs): 
-    for batch in data_loader:  # TODO: implement data loader
+    for batch in dataloader:  # TODO: implement data loader
         input_tensor, move_targets, eval_targets = batch
         
         # Forward pass
