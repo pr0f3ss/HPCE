@@ -234,6 +234,29 @@ int Chess_Board::get_score() {
 }
 
 /**
+ * Returns the input sequence for the specified game
+ */
+int Chess_Board::get_input_sequence(PGN_Chess_Game game) {
+  Figure sequence_board[board_size][board_size][POS_LENGTH];
+  std::vector<Move> moves = game.get_move_sequence();
+  int num_moves = moves.size();
+  int i = 0;
+
+  turn = 0;
+  init_board();
+
+  // Play ahead and commit to last POS_LENGTH moves
+  while (i + POS_LENGTH < num_moves) {
+    play_move(moves[0].move_notation);
+  }
+}
+
+/**
+ * Returns the input token for the position
+ */
+int Chess_Board::get_input_token() {}
+
+/**
  * Returns 1 if and only if all move sequences in referenced game are legal.
  * @param input pgn-based chess game
  * @param output 1 iff legal, else 0.

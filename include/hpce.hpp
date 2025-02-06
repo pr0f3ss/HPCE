@@ -21,6 +21,8 @@
 #define QUEEN_TYPE 4
 #define KING_TYPE 5
 
+#define POS_LENGTH 8
+
 struct Figure {
   int value;
   int type;
@@ -57,6 +59,8 @@ public:
   int play_move(std::string move);
   int print_board();
   int get_score();
+
+  int get_input_sequence(PGN_Chess_Game game);
 
 private:
   int en_passant_target[2]; // Stores the rank and file of the en passant target
@@ -131,6 +135,8 @@ private:
   int handle_knight_disambiguation(std::string move, int &rank_from,
                                    int &file_from, int &rank_to, int &file_to,
                                    bool is_capture);
+
+  int get_input_token();
 };
 
 #endif
