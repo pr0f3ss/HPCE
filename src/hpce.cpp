@@ -1,5 +1,6 @@
 #include "../include/hpce.hpp"
 #include "../include/pgn_reader.hpp"
+#include <array>
 #include <cctype>
 #include <cstdlib>
 #include <iostream>
@@ -234,10 +235,14 @@ int Chess_Board::get_score() {
 }
 
 /**
- * Returns the input sequence for the specified game
+ * Returns the one-hot encoded input sequence for the specified game.
  */
-int Chess_Board::get_input_sequence(PGN_Chess_Game game) {
-  Figure sequence_board[board_size][board_size][POS_LENGTH];
+std::vector<std::array<std::array<std::array<int, NUM_FIGURES * 2>, board_size>,
+                       board_size>>
+Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
+  std::vector<std::array<
+      std::array<std::array<int, NUM_FIGURES * 2>, board_size>, board_size>>
+      sequence;
   std::vector<Move> moves = game.get_move_sequence();
   int num_moves = moves.size();
   int i = 0;
@@ -245,16 +250,51 @@ int Chess_Board::get_input_sequence(PGN_Chess_Game game) {
   turn = 0;
   init_board();
 
-  // Play ahead and commit to last POS_LENGTH moves
+  // Play ahead until last POS_LENGTH moves remain
   while (i + POS_LENGTH < num_moves) {
-    play_move(moves[0].move_notation);
+    play_move(moves[i].move_notation);
+    i++;
   }
+
+  // Capture snapshots of the board for the last POS_LENGTH moves
+  for (int j = 0; j < POS_LENGTH && i < num_moves; i++, j++) {
+    sequence.push_back(get_board_snapshot());
+    play_move(moves[i].move_notation);
+  }
+
+  return sequence;
 }
 
 /**
- * Returns the input token for the position
+ * Returns the one-hot encoded snapshot of the board.
  */
-int Chess_Board::get_input_token() {}
+std::array<std::array<std::array<int, NUM_FIGURES * 2>, board_size>, board_size>
+Chess_Board::get_board_snapshot() {
+  std::array<std::array<std::array<int, NUM_FIGURES * 2>, board_size>,
+             board_size>
+      snapshot = {};
+
+  for (int i = 0; i < board_size; i++) {
+    for (int j = 0; j < board_size; j++) {
+      snapshot[i][j] = get_input_token(i, j);
+    }
+  }
+
+  return snapshot;
+}
+
+/**
+ * Returns a one-hot encoding vector for the piece at position (i, j).
+ */
+std::array<int, NUM_FIGURES * 2> Chess_Board::get_input_token(int i, int j) {
+  std::array<int, NUM_FIGURES * 2> B = {0};
+  if (!board[i][j].empty) { // Assuming 0 means an empty square
+    int type = board[i][j].type;
+    int color = board[i][j].color; // 0 for white, 1 for black
+    B[type + (color * NUM_FIGURES)] = 1;
+  }
+  return B;
+}
 
 /**
  * Returns 1 if and only if all move sequences in referenced game are legal.

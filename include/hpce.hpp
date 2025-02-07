@@ -22,6 +22,7 @@
 #define KING_TYPE 5
 
 #define POS_LENGTH 8
+#define NUM_FIGURES 6
 
 struct Figure {
   int value;
@@ -60,11 +61,13 @@ public:
   int print_board();
   int get_score();
 
-  int get_input_sequence(PGN_Chess_Game game);
+  std::vector<std::array<
+      std::array<std::array<int, NUM_FIGURES * 2>, board_size>, board_size>>
+  get_input_sequence(PGN_Chess_Game &game);
 
 private:
-  int en_passant_target[2]; // Stores the rank and file of the en passant target
-                            // square
+  int en_passant_target[2]; // Stores the rank and file of the en
+                            // passant target square
 
   void init_board();
   int is_legal_game(PGN_Chess_Game chess_game);
@@ -136,7 +139,10 @@ private:
                                    int &file_from, int &rank_to, int &file_to,
                                    bool is_capture);
 
-  int get_input_token();
+  std::array<std::array<std::array<int, NUM_FIGURES * 2>, board_size>,
+             board_size>
+  get_board_snapshot();
+  std::array<int, NUM_FIGURES * 2> get_input_token(int i, int j);
 };
 
 #endif
