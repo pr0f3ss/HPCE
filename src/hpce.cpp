@@ -243,6 +243,7 @@ Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
   std::vector<std::array<
       std::array<std::array<int, NUM_FIGURES * 2>, board_size>, board_size>>
       sequence;
+  std::vector<int> castle_en_passant_info;
   std::vector<Move> moves = game.get_move_sequence();
   int num_moves = moves.size();
   int i = 0;
@@ -259,6 +260,10 @@ Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
   // Capture snapshots of the board for the last POS_LENGTH moves
   for (int j = 0; j < POS_LENGTH && i < num_moves; i++, j++) {
     sequence.push_back(get_board_snapshot());
+    castle_en_passant_info.insert(castle_en_passant_info.end(),
+                                  {king_moved[WHITE], king_moved[BLACK],
+                                   en_passant_target[WHITE],
+                                   en_passant_target[BLACK]});
     play_move(moves[i].move_notation);
   }
 
