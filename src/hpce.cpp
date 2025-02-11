@@ -1,5 +1,6 @@
 #include "../include/hpce.hpp"
 #include "../include/pgn_reader.hpp"
+#include <algorithm>
 #include <array>
 #include <cctype>
 #include <cstdlib>
@@ -281,16 +282,11 @@ int Chess_Board::get_score() {
  * # positions since last capture, pawn move or castle / 100
  * 8 bools denoting if board position is repetition of position in 8 last moves
  */
-std::vector<std::array<std::array<std::array<int, NUM_FIGURES * 2>, board_size>,
-                       board_size>>
-Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
-  std::vector<std::array<
-      std::array<std::array<int, NUM_FIGURES * 2>, board_size>, board_size>>
-      sequence;
-  std::vector<int> castle_en_passant_info;
+Input_Sequence Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
+  Input_Sequence sequence;
   std::vector<Move> moves = game.get_move_sequence();
   int num_moves = moves.size();
-  int i = 0;
+  int i = 0, last_special_move;
   int rank_from, file_from, rank_to, file_to;
 
   turn = 0;
@@ -302,14 +298,79 @@ Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
     i++;
   }
 
-  // Capture snapshots of the board for the last POS_LENGTH moves
+  // Capture board states for last POS_LENGTH moves
   for (int j = 0; j < POS_LENGTH && i < num_moves; i++, j++) {
-    sequence.push_back(get_board_snapshot());
-    castle_en_passant_info.insert(castle_en_passant_info.end(),
-                                  {king_moved[WHITE], king_moved[BLACK],
-                                   en_passant_target[WHITE],
-                                   en_passant_target[BLACK]});
+    bool is_special = false;
     play_move(moves[i].move_notation, rank_from, file_from, rank_to, file_to);
+    if (is_special)
+      last_special_move = i;
+
+    std::array<std::array<std::array<int, INPUT_TOKEN_LENGTH>, board_size>,
+               board_size>
+        board_tokens = {};
+
+    // Compute values for each board position (x, y)
+    for (int x = 0; x < board_size; x++) {
+      for (int y = 0; y < board_size; y++) {
+        std::array<int, INPUT_TOKEN_LENGTH> token = {};
+
+        // 8 one-hot vectors for the last 8 board positions
+        for (int k = 0;
+             k < std::min(8, static_cast<int>(board_history.size()) + 1); k++) {
+          std::array<int, NUM_FIGURES * 2> piece_vector =
+              (k == 0) ? get_input_token(x, y)
+                       : get_past_input_token(x, y, k - 1);
+
+          std::copy(piece_vector.begin(), piece_vector.end(),
+                    token.begin() + k * 12);
+        }
+
+        // En passant information
+        token[96] = is_en_passant_target(rank_to, file_to);
+
+        // Save current turn
+        int reset_turn = turn;
+
+        // Define castling parameters for both sides
+        std::array<std::tuple<int, int, int, int, std::string>, 4>
+            castling_moves = {
+                std::make_tuple(0, 4, 0, 6, "O-O"),   // White kingside
+                std::make_tuple(0, 4, 0, 2, "O-O-O"), // White queenside
+                std::make_tuple(7, 4, 7, 6, "O-O"),   // Black kingside
+                std::make_tuple(7, 4, 7, 2, "O-O-O")  // Black queenside
+            };
+
+        // Loop through castling moves
+        for (int i = 0; i < 4; i++) {
+          turn = (i < 2) ? 0 : 1; // White for first two, Black for last two
+          auto [rank_from, file_from, rank_to, file_to, notation] =
+              castling_moves[i];
+          token[97 + i] =
+              handle_castling(notation, rank_from, file_from, rank_to, file_to);
+        }
+
+        // Reset turn
+        turn = reset_turn;
+
+        // Moves since last special move
+        token[101] = static_cast<float>(i - last_special_move) / 100.0f;
+
+        // Repetition history for last 8 moves
+        for (int k = 0; k < std::min(8, static_cast<int>(board_history.size()));
+             k++) {
+          token[102 + k] = (board_history[k][x][y] == board[x][y]);
+        }
+
+        board_tokens[x][y] = token;
+      }
+    }
+
+    sequence.board_tokens.push_back(board_tokens);
+
+    // Save board history
+    board_history.insert(board_history.begin(), get_board_snapshot());
+    if (board_history.size() > 7)
+      board_history.pop_back();
   }
 
   return sequence;

@@ -23,6 +23,7 @@
 
 #define POS_LENGTH 8
 #define NUM_FIGURES 6
+#define INPUT_TOKEN_LENGTH 112
 
 struct Figure {
   int value;
@@ -30,6 +31,12 @@ struct Figure {
   int color;
   int empty;
   char symbol;
+};
+
+struct Input_Sequence {
+  std::vector<std::array<
+      std::array<std::array<int, INPUT_TOKEN_LENGTH>, board_size>, board_size>>
+      board_tokens;
 };
 
 class Chess_Board {
@@ -61,11 +68,12 @@ public:
   int print_board();
   int get_score();
 
-  std::vector<std::array<
-      std::array<std::array<int, NUM_FIGURES * 2>, board_size>, board_size>>
-  get_input_sequence(PGN_Chess_Game &game);
+  Input_Sequence get_input_sequence(PGN_Chess_Game &game);
 
 private:
+  std::vector<std::array<std::array<int, board_size>, board_size>>
+      board_history;
+
   int en_passant_target[2]; // Stores the rank and file of the en
                             // passant target square
 
