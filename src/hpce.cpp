@@ -84,6 +84,44 @@ int Chess_Board::play_move(std::string move) {
 }
 
 /**
+ * Private method that functions identically to the public play_move() method,
+ * but passes the file and rank params as references.
+ */
+int Chess_Board::play_move(std::string move, int &rank_from, int &file_from,
+                           int &rank_to, int &file_to) {
+  rank_from = 0, file_from = 0, rank_to = 0, file_to = 0;
+
+  if (!is_legal_move(move, rank_from, file_from, rank_to, file_to)) {
+    return 0; // Move is not legal
+  }
+
+  // Update the board
+  update_board(rank_from, file_from, rank_to, file_to);
+
+  // Handle en passant target update
+  if (move.length() == 2 &&
+      (rank_to == 3 || rank_to == 4)) { // Pawn moves two squares
+    int en_passant_rank = turn == WHITE ? rank_to + 1 : rank_to - 1;
+    update_en_passant_target(en_passant_rank, file_to);
+  } else {
+    reset_en_passant_target(); // Reset en passant target after the next move
+  }
+
+  // Handle castling updates
+  if (move == "O-O" || move == "O-O-O") {
+    handle_castling_update(move);
+  }
+
+  // Update king/rook move flags
+  update_move_flags(move[0], file_from);
+
+  // Switch turns
+  turn = !turn;
+
+  return 1; // Move is legal
+}
+
+/**
  * Updates king/rook move flags.
  */
 void Chess_Board::update_move_flags(char piece, int file_from) {
@@ -236,6 +274,12 @@ int Chess_Board::get_score() {
 
 /**
  * Returns the one-hot encoded input sequence for the specified game.
+ * It is structured as follows:
+ * == 64 Input tokens of length 112 for each board location ==
+ * 8 one-hot vectors of length 12 for current and past 7 positions
+ * En passant and castling information
+ * # positions since last capture, pawn move or castle / 100
+ * 8 bools denoting if board position is repetition of position in 8 last moves
  */
 std::vector<std::array<std::array<std::array<int, NUM_FIGURES * 2>, board_size>,
                        board_size>>
@@ -247,6 +291,7 @@ Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
   std::vector<Move> moves = game.get_move_sequence();
   int num_moves = moves.size();
   int i = 0;
+  int rank_from, file_from, rank_to, file_to;
 
   turn = 0;
   init_board();
@@ -264,7 +309,7 @@ Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
                                   {king_moved[WHITE], king_moved[BLACK],
                                    en_passant_target[WHITE],
                                    en_passant_target[BLACK]});
-    play_move(moves[i].move_notation);
+    play_move(moves[i].move_notation, rank_from, file_from, rank_to, file_to);
   }
 
   return sequence;
