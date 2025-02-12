@@ -368,7 +368,7 @@ Input_Sequence Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
     sequence.board_tokens.push_back(board_tokens);
 
     // Save board history
-    board_history.insert(board_history.begin(), get_board_snapshot());
+    board_history.insert(board_history.begin(), board);
     if (board_history.size() > 7)
       board_history.pop_back();
   }

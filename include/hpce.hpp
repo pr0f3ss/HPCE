@@ -31,6 +31,11 @@ struct Figure {
   int color;
   int empty;
   char symbol;
+
+  bool operator==(const Figure &other) const {
+    return value == other.value && type == other.type && color == other.color &&
+           empty == other.empty && symbol == other.symbol;
+  }
 };
 
 struct Input_Sequence {
@@ -55,7 +60,7 @@ class Chess_Board {
   struct Figure b_king = {0, 5, 1, 0, 'K'};
   struct Figure empty = {0, -1, 0, 1, ' '};
 
-  Figure board[board_size][board_size];
+  std::array<std::array<Figure, board_size>, board_size> board;
   int turn;
   int king_pos[players][dimension];
   int king_moved[players];
@@ -71,7 +76,7 @@ public:
   Input_Sequence get_input_sequence(PGN_Chess_Game &game);
 
 private:
-  std::vector<std::array<std::array<int, board_size>, board_size>>
+  std::vector<std::array<std::array<Figure, board_size>, board_size>>
       board_history;
 
   int en_passant_target[2]; // Stores the rank and file of the en
