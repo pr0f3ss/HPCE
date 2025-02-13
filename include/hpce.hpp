@@ -159,6 +159,7 @@ private:
              board_size>
   get_board_snapshot();
   std::array<int, NUM_FIGURES * 2> get_input_token(int i, int j, int k);
+  bool is_special(const std::string &move);
 };
 
 #endif

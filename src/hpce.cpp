@@ -288,26 +288,33 @@ Input_Sequence Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
   int num_moves = moves.size();
   int i = 0, last_special_move;
   int rank_from, file_from, rank_to, file_to;
+  std::string curr_move;
 
   turn = 0;
   init_board();
 
   // Play ahead until last POS_LENGTH moves remain
   while (i + POS_LENGTH < num_moves) {
+    curr_move = moves[i].move_notation;
+
     play_move(moves[i].move_notation);
-    i++;
+    if (is_special(curr_move))
+      last_special_move = i;
 
     // Save board history
     board_history.insert(board_history.begin(), board);
     if (board_history.size() > 7)
       board_history.pop_back();
+
+    i++;
   }
 
   // Capture board states for last POS_LENGTH moves
   for (int j = 0; j < POS_LENGTH && i < num_moves; i++, j++) {
-    bool is_special = false;
-    play_move(moves[i].move_notation, rank_from, file_from, rank_to, file_to);
-    if (is_special)
+    curr_move = moves[i].move_notation;
+
+    play_move(curr_move, rank_from, file_from, rank_to, file_to);
+    if (is_special(curr_move))
       last_special_move = i;
 
     std::array<std::array<std::array<int, INPUT_TOKEN_LENGTH>, board_size>,
@@ -416,6 +423,31 @@ std::array<int, NUM_FIGURES * 2> Chess_Board::get_input_token(int i, int j,
     B[type + (color * NUM_FIGURES)] = 1;
   }
   return B;
+}
+
+/**
+ * Returns true if referenced move is a capture, a pawn move, or a castling
+ * move.
+ */
+bool Chess_Board::is_special(const std::string &move) {
+  // Check for castling moves
+  if (move == "O-O" || move == "O-O-O") {
+    return true;
+  }
+
+  // Check for captures (contains 'x')
+  if (move.find('x') != std::string::npos) {
+    return true;
+  }
+
+  // Check for pawn move (no uppercase letters)
+  for (char c : move) {
+    if (std::isupper(c)) {
+      return false; // Contains uppercase -> Not a pawn move
+    }
+  }
+
+  return true; // If no uppercase letters, it's a pawn move
 }
 
 /**
