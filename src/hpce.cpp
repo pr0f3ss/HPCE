@@ -286,7 +286,7 @@ Input_Sequence Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
   Input_Sequence sequence;
   std::vector<Move> moves = game.get_move_sequence();
   int num_moves = moves.size();
-  int i = 0, last_special_move;
+  int i = 0, last_special_move = 0;
   int rank_from, file_from, rank_to, file_to;
   std::string curr_move;
 
