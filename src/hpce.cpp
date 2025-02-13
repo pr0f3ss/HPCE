@@ -296,6 +296,11 @@ Input_Sequence Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
   while (i + POS_LENGTH < num_moves) {
     play_move(moves[i].move_notation);
     i++;
+
+    // Save board history
+    board_history.insert(board_history.begin(), board);
+    if (board_history.size() > 7)
+      board_history.pop_back();
   }
 
   // Capture board states for last POS_LENGTH moves
@@ -318,8 +323,7 @@ Input_Sequence Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
         for (int k = 0;
              k < std::min(8, static_cast<int>(board_history.size()) + 1); k++) {
           std::array<int, NUM_FIGURES * 2> piece_vector =
-              (k == 0) ? get_input_token(x, y)
-                       : get_past_input_token(x, y, k - 1);
+              get_input_token(x, y, k);
 
           std::copy(piece_vector.begin(), piece_vector.end(),
                     token.begin() + k * 12);
@@ -387,7 +391,7 @@ Chess_Board::get_board_snapshot() {
 
   for (int i = 0; i < board_size; i++) {
     for (int j = 0; j < board_size; j++) {
-      snapshot[i][j] = get_input_token(i, j);
+      snapshot[i][j] = get_input_token(i, j, 0);
     }
   }
 
@@ -395,13 +399,20 @@ Chess_Board::get_board_snapshot() {
 }
 
 /**
- * Returns a one-hot encoding vector for the piece at position (i, j).
+ * Returns a one-hot encoding vector for the piece at position (i, j) k moves
+ * ago, where k == 0: Current board.
  */
-std::array<int, NUM_FIGURES * 2> Chess_Board::get_input_token(int i, int j) {
+std::array<int, NUM_FIGURES * 2> Chess_Board::get_input_token(int i, int j,
+                                                              int k) {
   std::array<int, NUM_FIGURES * 2> B = {0};
-  if (!board[i][j].empty) { // Assuming 0 means an empty square
-    int type = board[i][j].type;
-    int color = board[i][j].color; // 0 for white, 1 for black
+  int history_len = board_history.size();
+
+  std::array<std::array<Figure, board_size>, board_size> ref_board =
+      k == 0 ? board : board_history[history_len - k - 1];
+
+  if (!ref_board[i][j].empty) {
+    int type = ref_board[i][j].type;
+    int color = ref_board[i][j].color; // 0 for white, 1 for black
     B[type + (color * NUM_FIGURES)] = 1;
   }
   return B;

@@ -158,7 +158,7 @@ private:
   std::array<std::array<std::array<int, NUM_FIGURES * 2>, board_size>,
              board_size>
   get_board_snapshot();
-  std::array<int, NUM_FIGURES * 2> get_input_token(int i, int j);
+  std::array<int, NUM_FIGURES * 2> get_input_token(int i, int j, int k);
 };
 
 #endif
