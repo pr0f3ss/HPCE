@@ -2,8 +2,10 @@
 #define _HPCE_H
 
 #include "pgn_reader.hpp"
+#include <array>
 #include <string>
 #include <vector>
+
 
 #define board_size 8
 #define players 2

@@ -5,7 +5,11 @@
 #include <cctype>
 #include <cstdlib>
 #include <iostream>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h> // For automatic conversion of std::vector
 #include <string>
+
+namespace py = pybind11;
 
 /**
  * Default constructor. Initializes board and variagbles and prints the board.
@@ -1506,4 +1510,31 @@ int Chess_Board::check_diagonals(int figure_type, int &rank_from,
   }
 
   return -1;
+}
+
+PYBIND11_MODULE(hpce, m) {
+  m.doc() = "Python bindings for HPCE chess engine";
+
+  // Bind the Figure struct
+  py::class_<Figure>(m, "Figure")
+      .def(py::init<>())
+      .def_readwrite("value", &Figure::value)
+      .def_readwrite("type", &Figure::type)
+      .def_readwrite("color", &Figure::color)
+      .def_readwrite("empty", &Figure::empty)
+      .def_readwrite("symbol", &Figure::symbol)
+      .def("__eq__", &Figure::operator==); // Equality operator
+
+  // Bind the Input_Sequence struct
+  py::class_<Input_Sequence>(m, "Input_Sequence")
+      .def(py::init<>())
+      .def_readwrite("board_tokens", &Input_Sequence::board_tokens);
+
+  // Bind public Chess_Board class methods
+  py::class_<Chess_Board>(m, "Chess_Board")
+      .def(py::init<>()) // Constructor
+      .def("play_move", py::overload_cast<std::string>(&Chess_Board::play_move))
+      .def("print_board", &Chess_Board::print_board)
+      .def("get_score", &Chess_Board::get_score)
+      .def("get_input_sequence", &Chess_Board::get_input_sequence);
 }
