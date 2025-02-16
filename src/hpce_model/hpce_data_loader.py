@@ -1,12 +1,11 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
-import pgn_reader
 import hpce
 
 class ChessDataset(Dataset):
     def __init__(self, pgn_file):
         self.pgn_file = pgn_file
-        self.pgn_reader = pgn_reader.PGN_Reader()
+        self.pgn_reader = hpce.PGN_Reader()
         self.games = self.pgn_reader.return_games(pgn_file)
         self.chess_board = hpce.Chess_Board()
 

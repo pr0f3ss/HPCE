@@ -64,7 +64,7 @@ std::map<std::string, std::string> PGN_Chess_Game::get_tag_pairs(void) {
  * TODO: Add error logic
  */
 std::vector<Move> PGN_Chess_Game::get_move_sequence(void) {
-  return move_sequence;
+  return this->move_sequence;
 }
 
 /**

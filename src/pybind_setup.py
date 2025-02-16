@@ -15,29 +15,21 @@ class BuildExt(build_ext):
             ext.include_dirs.append(pybind11.get_include())
         build_ext.build_extensions(self)
 
-# Define the extension modules
-pgn_reader_module = Extension(
-    'pgn_reader',
-    sources=['pgn_reader.cpp'],
-    include_dirs=[pybind11.get_include()],
-    language='c++',
-    extra_compile_args=['-std=c++17', '-O3'], 
-)
-
+# Define the extension module for hpce (including pgn_reader.cpp)
 hpce_module = Extension(
-    'hpce',
-    sources=['hpce.cpp'],
+    'hpce',  
+    sources=['hpce.cpp', 'pgn_reader.cpp'],
     include_dirs=[pybind11.get_include()],
     language='c++',
-    extra_compile_args=['-std=c++17', '-O3'], 
+    extra_compile_args=['-std=c++17', '-O3'],
 )
 
-# Setup the modules
+# Setup the module
 setup(
-    name='hpce_modules',
+    name='hpce',
     version='1.0',
-    description='Python bindings for HPCE PGN Reader and Chess Engine',
-    ext_modules=[pgn_reader_module, hpce_module],
+    description='Python bindings for HPCE',
+    ext_modules=[hpce_module],
     cmdclass={'build_ext': BuildExt},  # Use custom build class
     zip_safe=False,
 )
