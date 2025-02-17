@@ -40,5 +40,5 @@ if not os.path.exists(build_dir):
     os.makedirs(build_dir)
 
 for file in os.listdir():
-    if file.endswith(".so") and (file.startswith("pgn_reader") or file.startswith("hpce")):
+    if file.endswith(".so") and file.startswith("hpce"):
         shutil.move(file, os.path.join(build_dir, file))

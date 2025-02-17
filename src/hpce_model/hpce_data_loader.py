@@ -15,7 +15,8 @@ class ChessDataset(Dataset):
     # TODO: Implement item retrieval
     def __getitem__(self, idx):
         curr_game = self.games[idx]
-        return torch.tensor([self.chess_board.get_input_token(curr_game)], dtype=torch.float32)
+        input_sequence = self.chess_board.get_input_sequence(curr_game).board_tokens
+        return torch.tensor([input_sequence], dtype=torch.float32)
 
 if __name__ == "__main__":
     pgn_file = "../../data/pass_test_case.pgn"

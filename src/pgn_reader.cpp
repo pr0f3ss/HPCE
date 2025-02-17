@@ -1,8 +1,5 @@
 #include "../include/pgn_reader.hpp"
 #include "../include/hpce.hpp"
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h> // For automatic conversion of std::vector
-
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -14,8 +11,6 @@
 #include <string.h>
 #include <string>
 #include <vector>
-
-namespace py = pybind11;
 
 // Helps trim the getline strings from pgn files.
 void trimString(std::string &str) {
@@ -208,25 +203,4 @@ int PGN_Reader::validate_tag_pair_map(
   }
 
   return 1;
-}
-
-// Pybind11 module definition
-PYBIND11_MODULE(pgn_reader, m) {
-  m.doc() = "Python bindings for HPCE";
-
-  py::class_<Move>(m, "Move")
-      .def(py::init<>())
-      .def_readwrite("move_nr", &Move::move_nr)
-      .def_readwrite("turn", &Move::turn)
-      .def_readwrite("move_notation", &Move::move_notation);
-
-  py::class_<PGN_Chess_Game>(m, "PGN_Chess_Game")
-      .def(py::init<std::map<std::string, std::string>>())
-      .def("get_tag_pairs", &PGN_Chess_Game::get_tag_pairs)
-      .def("get_move_sequence", &PGN_Chess_Game::get_move_sequence)
-      .def("set_move_sequence", &PGN_Chess_Game::set_move_sequence);
-
-  py::class_<PGN_Reader>(m, "PGN_Reader")
-      .def(py::init<>())
-      .def("return_games", &PGN_Reader::return_games);
 }
