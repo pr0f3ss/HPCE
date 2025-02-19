@@ -21,26 +21,27 @@ Chess_Board::Chess_Board() {
   en_passant_target[1] = -1;
 
   init_board();
-  play_move("e4");
-  play_move("e5");
 
-  play_move("Nf3");
-  play_move("Nc6");
+  // play_move("e4");
+  // play_move("e5");
 
-  play_move("Bb5");
-  play_move("a6");
+  // play_move("Nf3");
+  // play_move("Nc6");
 
-  play_move("O-O");
-  play_move("d6");
+  // play_move("Bb5");
+  // play_move("a6");
 
-  play_move("a3");
-  play_move("Bd7");
+  // play_move("O-O");
+  // play_move("d6");
 
-  play_move("a4");
-  play_move("Qe7");
+  // play_move("a3");
+  // play_move("Bd7");
 
-  play_move("a5");
-  play_move("O-O-O");
+  // play_move("a4");
+  // play_move("Qe7");
+
+  // play_move("a5");
+  // play_move("O-O-O");
 
   print_board();
 }
