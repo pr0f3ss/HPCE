@@ -12,14 +12,9 @@
 namespace py = pybind11;
 
 /**
- * Default constructor. Initializes board and variagbles and prints the board.
+ * Default constructor. Initializes board and variables and prints the board.
  */
 Chess_Board::Chess_Board() {
-  turn = 0;
-
-  en_passant_target[0] = -1; // Initialize to invalid value
-  en_passant_target[1] = -1;
-
   init_board();
 
   // play_move("e4");
@@ -216,9 +211,15 @@ int Chess_Board::print_board() {
 }
 
 /**
- * Initializes the board.
+ * Initializes the board to the default values.
  */
 void Chess_Board::init_board() {
+  turn = 0;
+
+  // Initialize target squares to invalid values
+  en_passant_target[0] = -1;
+  en_passant_target[1] = -1;
+
   for (int j = 0; j < BOARD_SIZE; j++) {
     board[1][j] = b_pawn;
     board[6][j] = w_pawn;

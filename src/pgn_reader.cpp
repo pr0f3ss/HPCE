@@ -12,66 +12,6 @@
 #include <string>
 #include <vector>
 
-// Helps trim the getline strings from pgn files.
-void trimString(std::string &str) {
-  str.erase(str.begin(),
-            std::find_if(str.begin(), str.end(), [](unsigned char ch) {
-              return !std::isspace(ch) && ch != '[' && ch != ']';
-            }));
-  str.erase(std::find_if(str.rbegin(), str.rend(),
-                         [](unsigned char ch) {
-                           return !std::isspace(ch) && ch != '[' && ch != ']';
-                         })
-                .base(),
-            str.end());
-}
-
-/**
- * Default constructor. Initializes PGN Chess Game class.
- */
-PGN_Chess_Game::PGN_Chess_Game(std::map<std::string, std::string> tag_pairs)
-    : tag_pairs{tag_pairs} {}
-
-/**
- * Default deconstructor.
- */
-PGN_Chess_Game::~PGN_Chess_Game() {}
-
-/**
- * Adds move to chess game. Returns 1 if operation was successful.
- * TODO: Add error logic
- */
-int PGN_Chess_Game::add_move(Move move) {
-  move_sequence.push_back(move);
-
-  return 1;
-}
-
-/**
- * Retrieves the tag pairs.
- */
-std::map<std::string, std::string> PGN_Chess_Game::get_tag_pairs(void) {
-  return tag_pairs;
-}
-
-/**
- * Retrieves the move sequence.
- * TODO: Add error logic
- */
-std::vector<Move> PGN_Chess_Game::get_move_sequence(void) {
-  return move_sequence;
-}
-
-/**
- * Set move sequence to p_move_sequence by value.
- * TODO: Add error logic
- */
-void PGN_Chess_Game::set_move_sequence(std::vector<Move> &p_move_sequence) {
-  move_sequence.clear();
-  move_sequence.insert(move_sequence.end(), p_move_sequence.begin(),
-                       p_move_sequence.end());
-}
-
 /**
  * Default constructor. Initializes PGN Reader class.
  */
@@ -122,7 +62,7 @@ std::vector<PGN_Chess_Game> PGN_Reader::return_games(std::string file_path) {
 
       // Match key and value from each tag pair string and add into tag pair map
       for (std::string s : str_tag_pairs) {
-        trimString(s);
+        PGN_Reader::trim_string(s);
         if (std::regex_match(s, match, re)) {
           std::string key = match[1].str();
           std::string value = match[2].str();
@@ -163,7 +103,7 @@ std::vector<PGN_Chess_Game> PGN_Reader::return_games(std::string file_path) {
             curr_move.find_first_not_of(" \t\r\n") == std::string::npos)
           break;
 
-        trimString(curr_move);
+        PGN_Reader::trim_string(curr_move);
 
         std::regex move_regex(R"((\d+)\.([^\s]+)\s+([^\s]+)?)");
         std::sregex_iterator it(curr_move.begin(), curr_move.end(), move_regex);
@@ -203,4 +143,18 @@ int PGN_Reader::validate_tag_pair_map(
   }
 
   return 1;
+}
+
+// Helps trim the getline strings from pgn files.
+void PGN_Reader::trim_string(std::string &str) {
+  str.erase(str.begin(),
+            std::find_if(str.begin(), str.end(), [](unsigned char ch) {
+              return !std::isspace(ch) && ch != '[' && ch != ']';
+            }));
+  str.erase(std::find_if(str.rbegin(), str.rend(),
+                         [](unsigned char ch) {
+                           return !std::isspace(ch) && ch != '[' && ch != ']';
+                         })
+                .base(),
+            str.end());
 }
