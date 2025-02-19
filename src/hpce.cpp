@@ -203,9 +203,9 @@ void Chess_Board::handle_castling_update(std::string move) {
  * Prints the board to stdout for debugging purposes.
  */
 int Chess_Board::print_board() {
-  for (int i = 0; i < board_size; i++) {
+  for (int i = 0; i < BOARD_SIZE; i++) {
     std::cout << "|";
-    for (int j = 0; j < board_size; j++) {
+    for (int j = 0; j < BOARD_SIZE; j++) {
       std::cout << board[i][j].symbol << "|";
     }
     std::cout << "\n________________\n";
@@ -218,13 +218,13 @@ int Chess_Board::print_board() {
  * Initializes the board.
  */
 void Chess_Board::init_board() {
-  for (int j = 0; j < board_size; j++) {
+  for (int j = 0; j < BOARD_SIZE; j++) {
     board[1][j] = b_pawn;
     board[6][j] = w_pawn;
   }
 
   for (int i = 2; i < 6; i++) {
-    for (int j = 0; j < board_size; j++) {
+    for (int j = 0; j < BOARD_SIZE; j++) {
       board[i][j] = empty;
     }
   }
@@ -321,13 +321,13 @@ Input_Sequence Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
     if (is_special(curr_move))
       last_special_move = i;
 
-    std::array<std::array<std::array<int, INPUT_TOKEN_LENGTH>, board_size>,
-               board_size>
+    std::array<std::array<std::array<int, INPUT_TOKEN_LENGTH>, BOARD_SIZE>,
+               BOARD_SIZE>
         board_tokens = {};
 
     // Compute values for each board position (x, y)
-    for (int x = 0; x < board_size; x++) {
-      for (int y = 0; y < board_size; y++) {
+    for (int x = 0; x < BOARD_SIZE; x++) {
+      for (int y = 0; y < BOARD_SIZE; y++) {
         std::array<int, INPUT_TOKEN_LENGTH> token = {};
 
         // 8 one-hot vectors for the last 8 board positions
@@ -394,14 +394,14 @@ Input_Sequence Chess_Board::get_input_sequence(PGN_Chess_Game &game) {
 /**
  * Returns the one-hot encoded snapshot of the board.
  */
-std::array<std::array<std::array<int, NUM_FIGURES * 2>, board_size>, board_size>
+std::array<std::array<std::array<int, NUM_FIGURES * 2>, BOARD_SIZE>, BOARD_SIZE>
 Chess_Board::get_board_snapshot() {
-  std::array<std::array<std::array<int, NUM_FIGURES * 2>, board_size>,
-             board_size>
+  std::array<std::array<std::array<int, NUM_FIGURES * 2>, BOARD_SIZE>,
+             BOARD_SIZE>
       snapshot = {};
 
-  for (int i = 0; i < board_size; i++) {
-    for (int j = 0; j < board_size; j++) {
+  for (int i = 0; i < BOARD_SIZE; i++) {
+    for (int j = 0; j < BOARD_SIZE; j++) {
       snapshot[i][j] = get_input_token(i, j, 0);
     }
   }
@@ -418,7 +418,7 @@ std::array<int, NUM_FIGURES * 2> Chess_Board::get_input_token(int i, int j,
   std::array<int, NUM_FIGURES * 2> B = {0};
   int history_len = board_history.size();
 
-  std::array<std::array<Figure, board_size>, board_size> ref_board =
+  std::array<std::array<Figure, BOARD_SIZE>, BOARD_SIZE> ref_board =
       k == 0 ? board : board_history[history_len - k - 1];
 
   if (!ref_board[i][j].empty) {

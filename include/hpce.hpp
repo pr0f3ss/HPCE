@@ -6,11 +6,10 @@
 #include <string>
 #include <vector>
 
-
-#define board_size 8
-#define players 2
-#define dimension 2
-#define rook_amount 2
+#define BOARD_SIZE 8
+#define AMT_PLAYERS 2
+#define DIMENSION 2
+#define AMT_ROOK 2
 
 #define WHITE 0
 #define BLACK 1
@@ -42,7 +41,7 @@ struct Figure {
 
 struct Input_Sequence {
   std::vector<std::array<
-      std::array<std::array<int, INPUT_TOKEN_LENGTH>, board_size>, board_size>>
+      std::array<std::array<int, INPUT_TOKEN_LENGTH>, BOARD_SIZE>, BOARD_SIZE>>
       board_tokens;
 };
 
@@ -62,11 +61,11 @@ class Chess_Board {
   struct Figure b_king = {0, 5, 1, 0, 'K'};
   struct Figure empty = {0, -1, 0, 1, ' '};
 
-  std::array<std::array<Figure, board_size>, board_size> board;
+  std::array<std::array<Figure, BOARD_SIZE>, BOARD_SIZE> board;
   int turn;
-  int king_pos[players][dimension];
-  int king_moved[players];
-  int rook_moved[players][rook_amount]; // 0: queenside rook, 1: kingside rook
+  int king_pos[AMT_PLAYERS][DIMENSION];
+  int king_moved[AMT_PLAYERS];
+  int rook_moved[AMT_PLAYERS][AMT_ROOK]; // 0: queenside rook, 1: kingside rook
 
 public:
   Chess_Board(void);
@@ -78,7 +77,7 @@ public:
   Input_Sequence get_input_sequence(PGN_Chess_Game &game);
 
 private:
-  std::vector<std::array<std::array<Figure, board_size>, board_size>>
+  std::vector<std::array<std::array<Figure, BOARD_SIZE>, BOARD_SIZE>>
       board_history;
 
   int en_passant_target[2]; // Stores the rank and file of the en
@@ -157,8 +156,8 @@ private:
                                    int &file_from, int &rank_to, int &file_to,
                                    bool is_capture);
 
-  std::array<std::array<std::array<int, NUM_FIGURES * 2>, board_size>,
-             board_size>
+  std::array<std::array<std::array<int, NUM_FIGURES * 2>, BOARD_SIZE>,
+             BOARD_SIZE>
   get_board_snapshot();
   std::array<int, NUM_FIGURES * 2> get_input_token(int i, int j, int k);
   bool is_special(const std::string &move);
