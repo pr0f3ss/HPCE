@@ -64,6 +64,22 @@ find_path(HPCE_INCLUDE_DIR hpce.hpp
         include
 )
 
+find_path(HPCE_INCLUDE_DIR pgn_chess_game.hpp
+    HINTS
+        ${HPCE_DIR}
+        ${HPCE_DIR}
+        $ENV{HPCE_DIR}
+        $ENV{HPCE_DIR}
+        ENV HPCE_DIR
+    PATHS
+        /usr
+        /usr/local
+        /usr/local/include
+        ${inc_glob}
+    PATH_SUFFIXES 
+        include
+)
+
 find_path(HPCE_INCLUDE_DIR pgn_reader.hpp
     HINTS
         ${HPCE_DIR}

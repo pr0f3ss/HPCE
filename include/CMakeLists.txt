@@ -1,5 +1,6 @@
 set(HPCE_INC
     hpce.hpp
+    pgn_chess_game.hpp
     pgn_reader.hpp
     hpce_test_driver.hpp
 )

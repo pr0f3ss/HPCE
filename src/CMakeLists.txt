@@ -1,5 +1,6 @@
 set(HPCE_SRC
     hpce.cpp
+    pgn_chess_game.cpp
     pgn_reader.cpp
 )
 
