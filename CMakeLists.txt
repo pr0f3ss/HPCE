@@ -4,6 +4,10 @@ set(CMAKE_CXX_STANDARD 17)
 project(HPCE VERSION 1.0)
 set(HPCE_VERSION 1.0)
 
+set(CMAKE_INSTALL_RPATH "/usr/local/lib/HPCE-1.0")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 # enable unit testing via "make test" once the code has been compiled.
 include(CTest)
 
@@ -20,6 +24,13 @@ endfunction(PREPEND)
 # bin/ and lib/, respectively.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/lib")
+
+# Ensure pybind11 uses FindPython instead of deprecated FindPythonInterp/FindPythonLibs
+find_package(Python REQUIRED COMPONENTS Interpreter Development)
+
+# Find pybind11
+set(CMAKE_PREFIX_PATH "/mnt/x/Projects/hpce/.venv/lib/python3.12/site-packages/pybind11/share/cmake/pybind11" ${CMAKE_PREFIX_PATH})
+find_package(pybind11 REQUIRED)
 
 # Include source code and headers.
 add_subdirectory(src)
@@ -77,7 +88,7 @@ target_include_directories(HPCE PUBLIC
 # specify LAPACK::LAPACK for linking so that we can avoid using the variables.
 # However, each package is different and one must check the documentation to 
 # see what variables are defined.
-# target_link_libraries(HPCE ${LAPACK_LIBRARIES})
+target_link_libraries(HPCE PUBLIC pybind11::module Python::Python)
 
 # Install HPCE in CMAKE_INSTALL_PREFIX (defaults to /usr/local on linux). 
 # To change the install location, run 
