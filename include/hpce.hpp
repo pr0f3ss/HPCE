@@ -74,6 +74,7 @@ public:
   int play_move(std::string move);
   int print_board();
   int get_score();
+  int is_legal_game(PGN_Chess_Game chess_game);
 
   Input_Sequence get_input_sequence(PGN_Chess_Game &game);
 
@@ -84,7 +85,6 @@ private:
                                                 // the en passant target square
 
   void init_board();
-  int is_legal_game(PGN_Chess_Game chess_game);
   int is_legal_move(std::string move, int &rank_from, int &file_from,
                     int &rank_to, int &file_to);
 

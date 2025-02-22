@@ -1,0 +1,10 @@
+[Event "Invalid Chess Game"]
+[Site "Test Suite"]
+[Date "2025.02.22"]
+[Round "1"]
+[White "Player1"]
+[Black "Player2"]
+[Result "*"]
+
+1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7+ Ke7 5. Nc3 d6
+6. d3 Be6 7. Nd5+ Kd7 8. Bg5 Be7 9. O-O-O *

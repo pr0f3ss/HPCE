@@ -58,3 +58,75 @@ TEST_CASE("Test Initialize correct PGN file", "[unit-test]") {
   CHECK(test_games[0].get_move_sequence() ==
         valid_chess_game.get_move_sequence());
 }
+
+TEST_CASE("Test Invalid Move: King Moves Into Check", "[unit-test]") {
+  Chess_Board board = Chess_Board();
+  PGN_Reader pgn_reader = PGN_Reader();
+
+  std::vector<PGN_Chess_Game> test_games =
+      pgn_reader.return_games("../data/move_into_check.pgn");
+
+  std::map<std::string, std::string> tag_pairs = {
+      {"Event", "Invalid Chess Game"},
+      {"Site", "Test Suite"},
+      {"Date", "2025.02.22"},
+      {"Round", "1"},
+      {"White", "Player1"},
+      {"Black", "Player2"},
+      {"Result", "*"}};
+
+  std::vector<Move> move_sequence = {
+      {1, 0, "e4"},    {1, 1, "e5"},
+      {2, 0, "Qh5"},   {2, 1, "Nc6"},
+      {3, 0, "Bc4"},   {3, 1, "Nf6"},
+      {4, 0, "Qxf7+"}, {4, 1, "Ke7"}, // Illegal move: Black moves into check
+      {5, 0, "Nc3"},   {5, 1, "d6"},
+      {6, 0, "d3"},    {6, 1, "Be6"},
+      {7, 0, "Nd5+"},  {7, 1, "Kd7"}, // Black's king stays in check
+      {8, 0, "Bg5"},   {8, 1, "Be7"},
+      {9, 0, "O-O-O"}};
+
+  PGN_Chess_Game invalid_chess_game =
+      Game_Factory::create_pgn_chess_game(tag_pairs, move_sequence);
+
+  CHECK(test_games.size() == 1);
+  CHECK(test_games[0].get_tag_pairs() == invalid_chess_game.get_tag_pairs());
+  CHECK(test_games[0].get_move_sequence() ==
+        invalid_chess_game.get_move_sequence());
+  CHECK(board.is_legal_game(test_games[0]) ==
+        board.is_legal_game(invalid_chess_game));
+}
+
+TEST_CASE("Test Invalid Move: Knight Moves Diagonally", "[unit-test]") {
+  Chess_Board board = Chess_Board();
+  PGN_Reader pgn_reader = PGN_Reader();
+
+  std::vector<PGN_Chess_Game> test_games =
+      pgn_reader.return_games("../data/knight_moves_diagonally.pgn");
+
+  std::map<std::string, std::string> tag_pairs = {
+      {"Event", "Invalid Chess Game"},
+      {"Site", "Test Suite"},
+      {"Date", "2025.02.22"},
+      {"Round", "2"},
+      {"White", "Player1"},
+      {"Black", "Player2"},
+      {"Result", "*"}};
+
+  std::vector<Move> move_sequence = {
+      {1, 0, "e4"},  {1, 1, "e5"},  {2, 0, "Nf3"},   {2, 1, "d6"},
+      {3, 0, "Nc3"}, {3, 1, "Nc6"}, {4, 0, "Ng5"},   {4, 1, "Be7"},
+      {5, 0, "Nd5"}, {5, 1, "Bf6"}, // Illegal move: Knight moves diagonally
+      {6, 0, "Bb5"}, {6, 1, "Ne7"}, {7, 0, "Nxe7+"}, {7, 1, "Kxe7"},
+      {8, 0, "O-O"}, {8, 1, "a6"},  {9, 0, "Ba4"}};
+
+  PGN_Chess_Game invalid_chess_game =
+      Game_Factory::create_pgn_chess_game(tag_pairs, move_sequence);
+
+  CHECK(test_games.size() == 1);
+  CHECK(test_games[0].get_tag_pairs() == invalid_chess_game.get_tag_pairs());
+  CHECK(test_games[0].get_move_sequence() ==
+        invalid_chess_game.get_move_sequence());
+  CHECK(board.is_legal_game(test_games[0]) ==
+        board.is_legal_game(invalid_chess_game));
+}

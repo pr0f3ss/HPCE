@@ -38,7 +38,7 @@ Chess_Board::Chess_Board() {
   // play_move("a5");
   // play_move("O-O-O");
 
-  print_board();
+  // print_board();
 }
 
 /**
@@ -462,15 +462,15 @@ bool Chess_Board::is_special(const std::string &move) {
  * @param output 1 iff legal, else 0.
  */
 int Chess_Board::is_legal_game(PGN_Chess_Game game) {
-  turn = 0;
-
   init_board();
 
   std::vector<Move> move_sequence = game.get_move_sequence();
 
   // TODO: Implement error logic
-  // for (Move move : move_sequence)
-  // play_move(move.move_notation);
+  for (Move move : move_sequence) {
+    if (!play_move(move.move_notation))
+      return 0;
+  }
 
   return 1;
 }
