@@ -84,7 +84,7 @@ TEST_CASE("Test Invalid Move: King Moves Into Check", "[unit-test]") {
       {6, 0, "d3"},    {6, 1, "Be6"},
       {7, 0, "Nd5+"},  {7, 1, "Kd7"}, // Black's king stays in check
       {8, 0, "Bg5"},   {8, 1, "Be7"},
-      {9, 0, "O-O-O"}};
+      {9, 0, "O-O-O"}, {9, 1, "*"}};
 
   PGN_Chess_Game invalid_chess_game =
       Game_Factory::create_pgn_chess_game(tag_pairs, move_sequence);
@@ -118,7 +118,7 @@ TEST_CASE("Test Invalid Move: Knight Moves Diagonally", "[unit-test]") {
       {3, 0, "Nc3"}, {3, 1, "Nc6"}, {4, 0, "Ng5"},   {4, 1, "Be7"},
       {5, 0, "Nd5"}, {5, 1, "Bf6"}, // Illegal move: Knight moves diagonally
       {6, 0, "Bb5"}, {6, 1, "Ne7"}, {7, 0, "Nxe7+"}, {7, 1, "Kxe7"},
-      {8, 0, "O-O"}, {8, 1, "a6"},  {9, 0, "Ba4"}};
+      {8, 0, "O-O"}, {8, 1, "a6"},  {9, 0, "Ba4"},   {9, 1, "*"}};
 
   PGN_Chess_Game invalid_chess_game =
       Game_Factory::create_pgn_chess_game(tag_pairs, move_sequence);

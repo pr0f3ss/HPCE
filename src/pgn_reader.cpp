@@ -104,10 +104,15 @@ std::vector<PGN_Chess_Game> PGN_Reader::return_games(std::string file_path) {
           break;
 
         PGN_Reader::trim_string(curr_move);
+        // Clean up unwanted carriage returns or newlines
+        curr_move.erase(std::remove(curr_move.begin(), curr_move.end(), '\r'),
+                        curr_move.end());
+        curr_move.erase(std::remove(curr_move.begin(), curr_move.end(), '\n'),
+                        curr_move.end());
 
-        std::regex move_regex(R"((\d+)\.([^\s]+)\s+([^\s]+)?)");
+        std::regex move_regex(R"((\d+)\.\s*([^\s]+)(?:\s+([^\s]+))?)");
         std::sregex_iterator it(curr_move.begin(), curr_move.end(), move_regex);
-        std::sregex_iterator end;
+        std::sregex_iterator end(curr_move.end(), curr_move.end(), move_regex);
 
         while (it != end) {
           std::smatch match = *it;
