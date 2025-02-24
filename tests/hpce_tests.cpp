@@ -7,6 +7,9 @@
 #include <iostream>
 #include <string>
 
+#define ILLEGAL_GAME 0
+#define LEGAL_GAME 1
+
 TEST_CASE("Test Initialize correct PGN file", "[unit-test]") {
   Chess_Board board = Chess_Board();
   PGN_Reader pgn_reader = PGN_Reader();
@@ -93,8 +96,7 @@ TEST_CASE("Test Invalid Move: King Moves Into Check", "[unit-test]") {
   CHECK(test_games[0].get_tag_pairs() == invalid_chess_game.get_tag_pairs());
   CHECK(test_games[0].get_move_sequence() ==
         invalid_chess_game.get_move_sequence());
-  CHECK(board.is_legal_game(test_games[0]) ==
-        board.is_legal_game(invalid_chess_game));
+  CHECK(board.is_legal_game(test_games[0]) == ILLEGAL_GAME);
 }
 
 TEST_CASE("Test Invalid Move: Knight Moves Diagonally", "[unit-test]") {
@@ -127,6 +129,5 @@ TEST_CASE("Test Invalid Move: Knight Moves Diagonally", "[unit-test]") {
   CHECK(test_games[0].get_tag_pairs() == invalid_chess_game.get_tag_pairs());
   CHECK(test_games[0].get_move_sequence() ==
         invalid_chess_game.get_move_sequence());
-  CHECK(board.is_legal_game(test_games[0]) ==
-        board.is_legal_game(invalid_chess_game));
+  CHECK(board.is_legal_game(test_games[0]) == ILLEGAL_GAME);
 }
