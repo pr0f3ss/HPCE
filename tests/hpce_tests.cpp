@@ -62,6 +62,17 @@ TEST_CASE("Test Initialize correct PGN file", "[unit-test]") {
         valid_chess_game.get_move_sequence());
 }
 
+TEST_CASE("Read Large File", "[unit-test]") {
+  Chess_Board board = Chess_Board();
+  PGN_Reader pgn_reader = PGN_Reader();
+
+  std::vector<PGN_Chess_Game> test_games =
+      pgn_reader.return_games("../data/Abdusattorov.pgn");
+
+  for (PGN_Chess_Game game : test_games)
+    CHECK(board.is_legal_game(game) == LEGAL_GAME);
+}
+
 TEST_CASE("Test Invalid Move: King Moves Into Check", "[unit-test]") {
   Chess_Board board = Chess_Board();
   PGN_Reader pgn_reader = PGN_Reader();
