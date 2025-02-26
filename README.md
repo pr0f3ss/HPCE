@@ -1,6 +1,10 @@
 # HPCE: High-Performance Chess Engine
 
-![Chess Engine](https://img.shields.io/badge/chess-engine-brightgreen) ![C++](https://img.shields.io/badge/language-C%2B%2B-blue) ![License](https://img.shields.io/badge/license-MIT-lightgrey)
+<p align="center">
+  <img src="https://img.shields.io/badge/chess-engine-brightgreen" alt="Chess Engine"/>
+  <img src="https://img.shields.io/badge/language-C%2B%2B-blue" alt="C++"/>
+  <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="License"/>
+</p>
 
 <p align="center">
   <img src="hpce_logo.png" alt="HPCE Logo" width="300"/>
