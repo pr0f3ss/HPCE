@@ -4,6 +4,8 @@
 
 HPCE is a high-performance chess engine written in C++ that supports:
 
+- **Deep Neural Network Input Sequence/Token Generation**: Integrate our engine backend into your deep neural network to parse games into tokens.
+- **Transformer DNN implementation**: Discover our machine learning model for move evaluation.
 - **PGN File Streaming**: Parse and manage chess games in the Portable Game Notation (PGN) format.
 - **Customizable Chess Rulesets**: Extend and modify piece behavior with an adaptable ruleset.
 - **Test Driver**: Comprehensive testing capabilities to validate engine functionality.
@@ -11,22 +13,29 @@ HPCE is a high-performance chess engine written in C++ that supports:
 ## Features
 
 ### Core Engine
-- **ChessBoard Class** (`HPCE.cpp` / `HPCE.h`):
+- **Chess_Board Class** (`hpce.cpp` / `hpce.h`):
   - Initializes a chessboard instance.
   - Handles move execution using standard chess notation.
   - Retrieves current game scores.
   - Verifies move legality based on a robust ruleset for each piece.
   - Extensible architecture to modify piece behavior by altering individual rulesets.
+  - Compile as static or shared library to use in your own project.
+
+### Transformer DNN
+- **** (`hpce_model.py` / `hpce_data_loader.py` / `hpce_model_train.py`):
+  - Using Pybind bindings, integrate the HPCE engine into your own model data loader.
+  - Train a model using our predefined model.
+  - Alter input sequence token generation for your custom needs.
 
 ### PGN Support
-- **PGN_Chess_Game Class** (`PGN_reader.cpp` / `PGN_reader.h`):
+- **PGN_Chess_Game Class** (`pgn_chess_game.cpp` / `pgn_reader.h`):
   - Stores PGN tag pairs and all game moves.
-- **PGN_Reader Class**:
-  - Parses PGN files and translates moves into engine-compatible commands.
+- **PGN_Reader Class** (`pgn_reader.cpp` / `pgn_reader.h`):
+  - Parses PGN files and translates moves into engine-compatible objects.
   - Provides structured access to game metadata and moves.
 
 ### Testing
-- Includes a **test driver** to validate chess engine operations, ensuring legal move generation, scoring, and PGN parsing integrity.
+- Includes a **test driver** to validate chess engine operations, ensuring legal move generation, scoring, and PGN parsing integrity. See [TESTING.md](./TESTING.md) for details.
 
 ## Getting Started
 
@@ -91,7 +100,7 @@ HPCE is a high-performance chess engine written in C++ that supports:
 Place your PGN files in the `data/` directory or provide an absolute path.
 
 ### Extending Rulesets
-Modify the `ChessBoard` implementation in `HPCE.cpp` to add or adjust rules for specific pieces. For example:
+Modify the `Chess_Board` implementation in `HPCE.cpp` to add or adjust rules for specific pieces. For example:
 - Add custom moves for new chess variants.
 - Create unique scoring logic based on specific conditions.
 
@@ -101,15 +110,22 @@ Modify the `ChessBoard` implementation in `HPCE.cpp` to add or adjust rules for 
 HPCE/
 ├── src/
 │   ├── hpce.cpp                # Core engine implementation
-│   ├── hpce.h                  # Core engine header
-│   ├── PGN_reader.cpp          # PGN parsing implementation
-│   └── PGN_reader.h            # PGN parsing header
+│   ├── pgn_chess_game.cpp      # PGN object implementation
+│   ├── pgn_reader.cpp          # PGN parsing implementation
+│   └── hpce_model/
+│       ├── hpce_data_loader.py # Model data loader
+│       ├── hpce_model_train.py # Model training file
+│       └── hpce_model.cpp      # Model definition file
+│
+├── include/                    # Header files
+│
 ├── tests/
-│   ├── hpce_test_driver.cpp    # Test driver implementation
+│   ├── notation_generator.py   # Generate notations for test case implementation
 │   ├── hpce_test_driver.h      # Test driver header
 │   └── hpce_tests.cpp          # Test file runner
-├── data/
-│   └── test_games.pgn          # Test PGN file
+│
+├── data/                       # Test pgn files
+├── training_data/              # Training pgn files
 ├── CMakeLists.txt              # Build configuration
 └── README.md                   # Project documentation
 ```
