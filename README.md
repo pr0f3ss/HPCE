@@ -2,6 +2,10 @@
 
 ![Chess Engine](https://img.shields.io/badge/chess-engine-brightgreen) ![C++](https://img.shields.io/badge/language-C%2B%2B-blue) ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
+<p align="center">
+  <img src="hpce_logo.png" alt="HPCE Logo" width="300"/>
+</p>
+
 HPCE is a high-performance chess engine written in C++ that supports:
 
 - **Deep Neural Network Input Sequence/Token Generation**: Integrate our engine backend into your deep neural network to parse games into tokens.
