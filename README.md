@@ -22,7 +22,7 @@ HPCE is a high-performance chess engine written in C++ that supports:
   - Compile as static or shared library to use in your own project.
 
 ### Transformer DNN
-- **** (`hpce_model.py` / `hpce_data_loader.py` / `hpce_model_train.py`):
+- **Pytorch model** (`hpce_model.py` / `hpce_data_loader.py` / `hpce_model_train.py`):
   - Using Pybind bindings, integrate the HPCE engine into your own model data loader.
   - Train a model using our predefined model.
   - Alter input sequence token generation for your custom needs.
