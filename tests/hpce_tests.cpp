@@ -10,7 +10,7 @@
 #define ILLEGAL_GAME 0
 #define LEGAL_GAME 1
 
-TEST_CASE("Test Initialize correct PGN file", "[unit-test]") {
+TEST_CASE("Read single-game, correct PGN file", "[pgn][single]") {
   Chess_Board board = Chess_Board();
   PGN_Reader pgn_reader = PGN_Reader();
 
@@ -62,15 +62,20 @@ TEST_CASE("Test Initialize correct PGN file", "[unit-test]") {
         valid_chess_game.get_move_sequence());
 }
 
-TEST_CASE("Read Large File", "[unit-test]") {
+TEST_CASE("Read multi-game, correct PGN file", "[pgn][multi]") {
   Chess_Board board = Chess_Board();
   PGN_Reader pgn_reader = PGN_Reader();
 
   std::vector<PGN_Chess_Game> test_games =
       pgn_reader.return_games("../data/Abdusattorov.pgn");
 
+  CHECK(test_games.size() == 2671);
+  int amt_legal_games = 0;
   for (PGN_Chess_Game game : test_games)
-    CHECK(board.is_legal_game(game) == LEGAL_GAME);
+    if (board.is_legal_game(game))
+      amt_legal_games++;
+
+  CHECK(amt_legal_games == 2671);
 }
 
 TEST_CASE("Test Invalid Move: King Moves Into Check", "[unit-test]") {
