@@ -71,9 +71,14 @@ TEST_CASE("Read multi-game, correct PGN file", "[pgn][multi]") {
 
   CHECK(test_games.size() == 2671);
   int amt_legal_games = 0;
-  for (PGN_Chess_Game game : test_games)
+  for (PGN_Chess_Game game : test_games) {
+    for (Move move : game.get_move_sequence()) {
+      // std::cout << move.move_notation << "\n";
+    }
+
     if (board.is_legal_game(game))
       amt_legal_games++;
+  }
 
   CHECK(amt_legal_games == 2671);
 }

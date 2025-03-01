@@ -468,8 +468,11 @@ int Chess_Board::is_legal_game(PGN_Chess_Game game) {
 
   // TODO: Implement error logic
   for (Move move : move_sequence) {
-    if (!play_move(move.move_notation))
+    if (!play_move(move.move_notation)) {
+      print_board();
+      std::cout << move.move_notation << "\n";
       return 0;
+    }
   }
 
   return 1;
