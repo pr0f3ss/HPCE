@@ -15,7 +15,7 @@ TEST_CASE("Read single-game, correct PGN file", "[pgn][single]") {
   PGN_Reader pgn_reader = PGN_Reader();
 
   std::vector<PGN_Chess_Game> test_games =
-      pgn_reader.return_games("../data/pass_test_case.pgn");
+      pgn_reader.return_games("../data/pgn_single.pgn");
 
   std::map<std::string, std::string> tag_pairs = {
       {"Event", "ch-UZB 1st League 2014"},
@@ -67,7 +67,7 @@ TEST_CASE("Read multi-game, correct PGN file", "[pgn][multi]") {
   PGN_Reader pgn_reader = PGN_Reader();
 
   std::vector<PGN_Chess_Game> test_games =
-      pgn_reader.return_games("../data/Abdusattorov.pgn");
+      pgn_reader.return_games("../data/pgn_multi.pgn");
 
   CHECK(test_games.size() == 2671);
   int amt_legal_games = 0;
@@ -113,6 +113,26 @@ TEST_CASE("Test Invalid Move: King Moves Into Check", "[unit-test]") {
   CHECK(test_games[0].get_move_sequence() ==
         invalid_chess_game.get_move_sequence());
   CHECK(board.is_legal_game(test_games[0]) == ILLEGAL_GAME);
+}
+
+TEST_CASE("Read single-game, malformed tags PGN file", "[pgn][single][tags]") {
+  Chess_Board board = Chess_Board();
+  PGN_Reader pgn_reader = PGN_Reader();
+
+  std::stringstream error_output; // Buffer to capture `std::cerr`
+  std::streambuf *old_cerr =
+      std::cerr.rdbuf(error_output.rdbuf()); // Redirect `cerr`
+
+  std::vector<PGN_Chess_Game> test_games =
+      pgn_reader.return_games("../data/pgn_single_tags.pgn");
+
+  // Restore original `cerr`
+  std::cerr.rdbuf(old_cerr);
+
+  std::string captured_output = error_output.str();
+  REQUIRE(captured_output.find(
+              "Current Tag pair does not contain the seven tag roster.") !=
+          std::string::npos); // Check for expected message
 }
 
 TEST_CASE("Test Invalid Move: Knight Moves Diagonally", "[unit-test]") {
